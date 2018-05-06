@@ -1,0 +1,23 @@
+#package file
+*.jar
+*.class
+*.war
+
+#idea ignore
+.idea/
+*.iml
+
+#maven ignore
+src/test/
+target/
+
+#eclipse ignore
+.classpath
+.project
+.settings/
+
+#vscode ignore
+
+#temp file
+*.log
+*.cache
