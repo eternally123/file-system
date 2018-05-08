@@ -16,7 +16,7 @@ public class DataArea {
     /*
     初始化randomAccessFile，在执行任何操作之前都会调用次函数
      */
-    public void initRandomAccessFile() {
+    private void initRandomAccessFile() {
         try {
             randomAccessFile = new RandomAccessFile("file_system", "rw");
         } catch (FileNotFoundException e) {
@@ -55,7 +55,7 @@ public class DataArea {
         }
     }
 
-    public char[] read(int number) {
+    public byte[] read(int number) {
         //读出一个簇的内容
         if (number < 0 | number > ConstVar.fatSize) {//超出范围
             System.out.println("DataArea write: number");
@@ -76,13 +76,7 @@ public class DataArea {
             }
         }
 
-        try {
-            String content = new String(b, "ascii");
-            char[] result = content.toCharArray();
-            return result;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return b;
     }
+
 }

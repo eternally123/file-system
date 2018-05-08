@@ -19,7 +19,7 @@ public class FAT {
     /*
     初始化randomAccessFile，在执行任何操作之前都会调用次函数
      */
-    public void initRandomAccessFile() {
+    private void initRandomAccessFile() {
         try {
             randomAccessFile = new RandomAccessFile("file_system", "rw");
         } catch (FileNotFoundException e) {
@@ -27,9 +27,8 @@ public class FAT {
         }
     }
 
-    /*
-    给定某个表项号和值，将值写入表项号
-     */
+
+    //给定某个表项号和值，将值写入表项号
     public void write(int number, int value) {
         if (number < 0 | number >= ConstVar.fatSize) {
             System.out.println("FAT.write: number invalid");
@@ -53,6 +52,51 @@ public class FAT {
         }
     }
 
+    //给定某个表项号，读取其内存储的值
+    public int read(int number) {
+        //读取某个fat表项的表项值
+        if (number < 0 | number >= ConstVar.fatSize) {
+            System.out.println("FAT.write: number invalid");
+            return -1;
+        }
+        initRandomAccessFile();
+        try {
+            randomAccessFile.seek(number * 2+ConstVar.fatStart);
+            byte[] b = new byte[2];
+            randomAccessFile.read(b);
+            int value = (int) ((b[0] << 8) & 0xffff) | (b[1] & 0xffff);
+            return value;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                randomAccessFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    //获取number个空的表项号
+    public int[] getEmptyItem(int number) {
+        //获取多个空fat表项
+        int[] result = new int[number];
+        int find = 0;
+        int index = 0;
+        int value;
+        while (find < number) {
+            value = read(index);
+            if (value == 0) {
+                result[find] = index;
+                find = find + 1;
+            }
+            index = index + 1;
+        }
+        return result;
+    }
+
+    //对多个表项写入值
     public void writeMany(int[] number) {
         //对多个fat表项赋值
         for (int i = 0; i < number.length; i++)
@@ -88,31 +132,6 @@ public class FAT {
         }
     }
 
-    public int read(int number) {
-        //读取某个fat表项的表项值
-        if (number < 0 | number >= ConstVar.fatSize) {
-            System.out.println("FAT.write: number invalid");
-            return -1;
-        }
-        initRandomAccessFile();
-        try {
-            randomAccessFile.seek(number * 2+ConstVar.fatStart);
-            byte[] b = new byte[2];
-            randomAccessFile.read(b);
-            int value = (int) ((b[0] << 8) & 0xffff) | (b[1] & 0xffff);
-            return value;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                randomAccessFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return -1;
-    }
-
     public int[] readFileNumbers(int startNumber) {
         //给起始簇号，读取文件所有簇号
         if (read(startNumber) == 0)//当前起始簇号没有记录文件
@@ -133,24 +152,8 @@ public class FAT {
         return result;
     }
 
-    public int[] getEmpty(int number) {
-        //获取多个空fat表项
-        int[] result = new int[number];
-        int find = 0;
-        int index = 0;
-        int value;
-        while (find < number) {
-            value = read(index);
-            if (value == 0) {
-                result[find] = index;
-                find = find + 1;
-            }
-            index = index + 1;
-        }
-        return result;
-    }
-
     public void formate() {
+        //格式化磁盘--格式化fat表
         byte[] b=new byte[ConstVar.fatSize];
         initRandomAccessFile();
         try {
@@ -165,6 +168,5 @@ public class FAT {
                 e.printStackTrace();
             }
         }
-        //格式化磁盘--格式化fat表
     }
 }
