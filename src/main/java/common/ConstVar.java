@@ -1,16 +1,27 @@
 package common;
 
 public class ConstVar {
-    public static final int sectors = 512;
-    public static final int cluster = 4 * 512;
+    /*
+    文件名
+     */
+    public static final String fileName = "file_system";
+    /*
+    磁盘大小常量 fat16
+     */
+    public static final int sectors = 512;//扇区大小(byte)
+    public static final int cluster = 4 * 512;//簇大小(byte)
 
-    public static final int area0Size = 512;
-    public static final int area1Size = 512;
-    public static final int fat1Size = 256;//fat表表项大小
-    public static final int dataAreaSize = 65;//数据区大小
+    public static final int area0Size = 512;//保留区大小(byte)
+    public static final int area1Size = 512;//保留区大小(byte)
+    public static final int fatSize = 1024 * 256;//fat表表项大小(byte)   2^16*2
+    public static final int fatStart = area0Size + area1Size;//fat表起始地址(byte)
+    public static final int dataAreaSize = 1024 * 1024 * 256;//数据区大小(byte)  2^16*4kb
+    public static final int dataAreaStart = fatStart + fatSize * 2;//数据区起始地址(byte) *2是两张fat表
+
 
     /*
     fat表表项值取值范围
      */
-   // public static final char
+    public static final int endFAT = 1024 * 64 - 1;
+
 }

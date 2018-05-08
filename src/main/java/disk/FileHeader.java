@@ -1,120 +1,184 @@
 package disk;
 
-import java.util.Arrays;
+import java.io.UnsupportedEncodingException;
 
-/*
-重写get、set方法
- */
 public class FileHeader {
-    char[] fileName=new char[48];//文件名
-    char[] attributes=new char[1];//属性
-    char[] seconds=new char[1];//秒进位
-    char[] createTime=new char[2];//创建时间
-    char[] createDate=new char[2];//创建日期
-    char[] updateTime=new char[2];//update时间
-    char[] updateDate=new char[2];//update日期
-    char[] startCluster=new char[2];//起始簇号
-    char[] fileLength=new char[4];//文件长度---占用簇大小*4
+    byte[] fileName = new byte[48];//文件名
+    byte[] attributes = new byte[1];//属性
+    byte[] seconds = new byte[1];//秒进位
+    byte[] createTime = new byte[2];//创建时间
+    byte[] createDate = new byte[2];//创建日期
+    byte[] updateTime = new byte[2];//update时间
+    byte[] updateDate = new byte[2];//update日期
+    byte[] startCluster = new byte[2];//起始簇号
+    byte[] fileLength = new byte[4];//文件长度---占用簇大小*4
 
     public FileHeader() {
     }
 
-    public FileHeader(char[] fileName, char[] attributes, char[] seconds, char[] createTime, char[] createDate, char[] updateTime, char[] updateDate, char[] startCluster, char[] fileLength) {
-        this.fileName = fileName;
-        this.attributes = attributes;
-        this.seconds = seconds;
-        this.createTime = createTime;
-        this.createDate = createDate;
-        this.updateTime = updateTime;
-        this.updateDate = updateDate;
-        this.startCluster = startCluster;
-        this.fileLength = fileLength;
+    public FileHeader(byte[] b) {
+        if (b.length != 64)
+            System.out.println("construct error FileHeader: the length of the parameter isn't 64");
+        for (int i = 0; i < 48; i++)
+            fileName[i] = b[i];//文件名
+        attributes[0] = b[48];
+        seconds[0] = b[49];
+        createTime[0] = b[50];
+        createTime[1] = b[51];
+        createDate[0] = b[52];
+        createDate[1] = b[53];
+        updateTime[0] = b[54];
+        updateTime[1] = b[55];
+        updateDate[0] = b[56];
+        updateDate[1] = b[57];
+        startCluster[0] = b[58];
+        startCluster[1] = b[59];
+        for (int i = 0; i < 4; i++)
+            fileLength[i] = b[60 + i];
     }
 
-    public char[] getFileName() {
-        return fileName;
+    public byte[] getBytes() {
+        byte[] b = new byte[64];
+        for (int i = 0; i < 48; i++)
+            b[i] = fileName[i];//文件名
+        b[48] = attributes[0];
+        b[49] = seconds[0];
+        b[50] = createTime[0];
+        b[51] = createTime[1];
+        b[52] = createDate[0];
+        b[53] = createDate[1];
+        b[54] = updateTime[0];
+        b[55] = updateTime[1];
+        b[56] = updateDate[0];
+        b[57] = updateDate[1];
+        b[58] = startCluster[0];
+        b[59] = startCluster[1];
+        for (int i = 0; i < 4; i++)
+            b[60 + i] = fileLength[i];
+        return b;
     }
 
-    public void setFileName(char[] fileName) {
-        this.fileName = fileName;
+    //获取文件名
+    public String getFileName() {
+        String fileNameV = new String(fileName);
+        return fileNameV;
     }
 
-    public char[] getAttributes() {
-        return attributes;
+    //设置文件名
+    public void setFileName(String fileNameV) {
+        try {
+            byte[] b = fileNameV.getBytes("ascii");
+            if (b.length > 48) {
+                System.out.println("FileHeader setFileName:invalid name");
+                return;
+            }
+            this.fileName = b;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void setAttributes(char[] attributes) {
-        this.attributes = attributes;
+    //设置为文件夹
+    public boolean setFolder(boolean b) {
+        if (b == true)
+            attributes[0] = (byte) (attributes[0] | 0x01);//最后一位置1
+        else
+            attributes[0] = (byte) (attributes[0] & 0xfe);//最后一位清0；
+        return true;
     }
 
-    public char[] getSeconds() {
-        return seconds;
+    //获取是否是文件夹
+    public int ifFolder() {
+        return attributes[0] & 0x01;
     }
 
-    public void setSeconds(char[] seconds) {
-        this.seconds = seconds;
+    //获取起始簇号
+    public int getStartCluster() {
+        return (int) startCluster[0] * 256 + (int) startCluster[1];
     }
 
-    public char[] getCreateTime() {
-        return createTime;
+    //设置起始簇号
+    public void setStartCluster(int number) {
+        startCluster[0] = (byte) ((number >> 8) & 0xff);
+        startCluster[1] = (byte) (number & 0xff);
     }
 
-    public void setCreateTime(char[] createTime) {
-        this.createTime = createTime;
+    public int getFileLength() {
+        return (int) (((fileLength[0] >> 24) & 0xff) * 256 * 256 * 256 + ((fileLength[0] >> 16) & 0xff) * 256 * 256 + ((fileLength[0] >> 8) & 0xff) * 2568 + fileLength[0] & 0xff);
     }
 
-    public char[] getCreateDate() {
-        return createDate;
+    public void setFileLength(int length) {
+        fileLength[0] = (byte) ((length >> 24) & 0xff);
+        fileLength[1] = (byte) ((length >> 16) & 0xff);
+        fileLength[2] = (byte) ((length >> 8) & 0xff);
+        fileLength[3] = (byte) (length & 0xff);
     }
 
-    public void setCreateDate(char[] createDate) {
-        this.createDate = createDate;
-    }
+//待补充
+//    public void setCreateTimeAndDate(Date date) {
+//
+//    }
+//
+//    public Date getCreateTimeAndDate() {
+//        return new Date();
+//    }
+//
+//    public void setUpdateTimeAndDate(Date date) {
+//
+//    }
+//
+//    public Date getUpdateTimeAndDate() {
+//        return new Date();
+//    }
+//
+//    private byte[] getSeconds() {
+//        return seconds;
+//    }
+//
+//    private void setSeconds(byte[] seconds) {
+//        this.seconds = seconds;
+//    }
+//
+//    private byte[] getCreateTime() {
+//        return createTime;
+//    }
+//
+//    private void setCreateTime(byte[] createTime) {
+//        this.createTime = createTime;
+//    }
+//
+//    private byte[] getCreateDate() {
+//        return createDate;
+//    }
+//
+//    private void setCreateDate(byte[] createDate) {
+//        this.createDate = createDate;
+//    }
+//
+//    private byte[] getUpdateTime() {
+//        return updateTime;
+//    }
+//
+//    private void setUpdateTime(byte[] updateTime) {
+//        this.updateTime = updateTime;
+//    }
+//
+//    private byte[] getUpdateDate() {
+//        return updateDate;
+//    }
+//
+//    private void setUpdateDate(byte[] updateDate) {
+//        this.updateDate = updateDate;
+//    }
 
-    public char[] getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(char[] updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public char[] getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(char[] updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    public char[] getStartCluster() {
-        return startCluster;
-    }
-
-    public void setStartCluster(char[] startCluster) {
-        this.startCluster = startCluster;
-    }
-
-    public char[] getFileLength() {
-        return fileLength;
-    }
-
-    public void setFileLength(char[] fileLength) {
-        this.fileLength = fileLength;
-    }
 
     @Override
     public String toString() {
         return "FileHeader{" +
-                "fileName=" + Arrays.toString(fileName) +
-                ", attributes=" + Arrays.toString(attributes) +
-                ", seconds=" + Arrays.toString(seconds) +
-                ", createTime=" + Arrays.toString(createTime) +
-                ", createDate=" + Arrays.toString(createDate) +
-                ", updateTime=" + Arrays.toString(updateTime) +
-                ", updateDate=" + Arrays.toString(updateDate) +
-                ", startCluster=" + Arrays.toString(startCluster) +
-                ", fileLength=" + Arrays.toString(fileLength) +
+                "fileName=" + getFileName() +
+                ", ifFolder=" + ifFolder() +
+                ", startCluster=" + getStartCluster() +
+                ", fileLength=" + getFileLength() +
                 '}';
     }
 }
