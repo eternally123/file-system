@@ -1,5 +1,7 @@
 package service;
 
+import disk.DiskHandler;
+
 import java.util.ArrayList;
 
 /**
@@ -9,21 +11,43 @@ import java.util.ArrayList;
  */
 public class FileService {
 
-    private ArrayList directoryStack;   //记录当前目录信息的栈
-    private ArrayList path;             //记录当前的路径栈
-    public String[] handleLsCommand(){
-        String[] directories=new String[0];
-        return directories;
+    private DiskHandler diskHandler;
+    private ArrayList<Integer> directoryStack;   //记录当前目录信息的栈
+    private ArrayList<String> path;             //记录当前的路径栈
+
+    public StringBuffer listCurrentDirectory(){
+        StringBuffer filesAndDirectories=new StringBuffer();
+        return filesAndDirectories;
     }
-    public String handleCdCommand(String directoryName){
+    public String changeDirectory(String directoryName){
         String currentPath = new String();
         return currentPath;
     }
-    public boolean creatFile(String fileName){ return true; }
-    public boolean removeFile(String fileName){ return true; }
-    public boolean creatDirectory(String directoryName){return true;}
-    public boolean removeDirectory(String directoryName){return true;}
-    public boolean format(){return true;}
+    public StringBuffer listAllDirectory(){
+        StringBuffer tree=new StringBuffer();
+        return tree;
+    }
+    public boolean creatFile(String fileName){
+        return true;
+    }
+    public boolean deleteFile(String fileName){
+        return true;
+    }
+    public boolean fileExist(String fileName){
+        return true;
+    }
+    public boolean creatDirectory(String directoryName){
+        return true;
+    }
+    public boolean deleteDirectory(String directoryName){
+        return true;
+    }
+    public boolean directoryExist(String directoryName){
+        return true;
+    }
+    public boolean format(){
+        return true;
+    }
     public boolean readFile(String fileName,StringBuffer content){
         return true;
     }

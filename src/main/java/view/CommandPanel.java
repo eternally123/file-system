@@ -92,43 +92,120 @@ public class CommandPanel extends JPanel {
         }
         commandHead = commandHead.toLowerCase();
         parameter = parameter.toLowerCase();
-        System.out.println("head: "+commandHead+" parameter: "+parameter);
+        //System.out.println("head: "+commandHead+" parameter: "+parameter);
         /*处理指令*/
-        if (commandHead.compareTo("cd") == 0 &&
-                (parameter.compareTo("\\") == 0 || parameter.compareTo("..") == 0 || parameter.compareTo(".") == 0)) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        if (commandHead.compareTo("cd") == 0 && (parameter.compareTo("/") == 0 || parameter.compareTo("..") == 0 || parameter.compareTo(".") == 0)) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            fileService.changeDirectory(parameter);
         }
-        else if (commandHead.compareTo("ls") == 0 && parameter.compareTo("") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        if (commandHead.compareTo("tree")==0){
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            commandOutput.append((fileService.listAllDirectory()).toString());
+        }
+        else if (commandHead.compareTo("ls") == 0 && parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            commandOutput.append((fileService.listCurrentDirectory()).toString());
         }
         else if (commandHead.compareTo("help") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+            commandOutput.append(commandHead+" "+parameter);
+            handleHelpCommand();
         }
-        else if (commandHead.compareTo("md") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        else if (commandHead.compareTo("md") == 0 && !parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            handleMdCommand(parameter);
+
         }
-        else if (commandHead.compareTo("rd") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        else if (commandHead.compareTo("rd") == 0 && !parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            handleRdCommand(parameter);
+
         }
-        else if (commandHead.compareTo("mf") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        else if (commandHead.compareTo("mf") == 0 && !parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            handleMfCommand(parameter);
         }
-        else if (commandHead.compareTo("rf") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+        else if (commandHead.compareTo("rf") == 0 && !parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            handleRfCommand(parameter);
         }
-        else if (commandHead.compareTo("edit") == 0) {
-            commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
-            fileEditor=new FileEditor(null,parameter,fileService);
-            fileEditor.show();
+        else if (commandHead.compareTo("edit") == 0 && !parameter.isEmpty()) {
+            commandOutput.append(commandHead+" "+parameter+"\n");
+            handleEditCommand(parameter);
         }
         else if (commandHead.compareTo("format") == 0) {
             commandOutput.append("commandHead: "+commandHead+" parameter: "+parameter);
+            if (fileService.format()){
+                commandOutput.append("Format successfully!\n");
+            }
         } else {
             commandOutput.append(command + "' is not a valid command !\nPlease input \'help\' to gain valid command ^_^ ");
         }
         commandOutput.append("\n\n");
         commandOutput.setCaretPosition(commandOutput.getText().length());
     }
+    public void handleHelpCommand(){
+        commandOutput.append("\nWelcome to help!\n");
+        commandOutput.append("command  parameter       -->usage are those:\n");
+        commandOutput.append("help                     -->to gain help about the command information.\n");
+        commandOutput.append("ls                       -->to list the files and directories of current directory.\n");
+        commandOutput.append("cd       .|..|/          -->to change current directory.\n");
+        commandOutput.append("tree                     --> to list all files of the file system.\n");
+        commandOutput.append("md       directoryName   -->to make a directory.\n");
+        commandOutput.append("rd       directoryName   -->to remove a directory.\n");
+        commandOutput.append("mf       fileName        -->to make a file.\n");
+        commandOutput.append("rf       fileName        -->to remove a file.\n");
+        commandOutput.append("edit     fileName        -->to edit a file.\n");
+        commandOutput.append("format                   -->to format the disk.\n");
+    }
+    public void handleMdCommand(String parameter){
+        if (fileService.directoryExist(parameter)){
+            commandOutput.append("The directory already exists!\n");
+        }else {
+            if (fileService.creatDirectory(parameter)) {
+                commandOutput.append("The directory has been created successfully!\n");
+            }else{
+                commandOutput.append("Failed to create directory ,unknown error happened!\n");
+            }
+        }
+    }
+    public void handleRdCommand(String parameter){
+        if (fileService.directoryExist(parameter)){
+            if (fileService.deleteDirectory(parameter)){
+                commandOutput.append("Directory deleted successfully!\n");
+            }
+        }else{
+            commandOutput.append("The directory dosen't exist!\n");
+        }
+    }
+    public void handleMfCommand(String parameter){
+        if (fileService.fileExist(parameter)){
+            commandOutput.append("The file already exists!\n");
+        }else {
+            if (fileService.creatFile(parameter)) {
+                commandOutput.append("The file has been created successfully!\n");
+            }else{
+                commandOutput.append("Failed to create the file,unknown error happened!\n");
+            }
+        }
+    }
+    public void handleRfCommand(String parameter){
+        if (fileService.fileExist(parameter)){
+            if (fileService.deleteFile(parameter)){
+                commandOutput.append("The file deleted successfully!\n");
+            }
+        }else {
+            commandOutput.append("The file dosen't exist!\n");
+        }
+    }
+    public void handleEditCommand(String parameter){
+        if (!fileService.fileExist(parameter)) {
+            fileService.creatFile(parameter);
+        }
+        //如果要编辑的文件不存在，先创建该文件
+        fileEditor = new FileEditor(null, parameter, fileService);
+        fileEditor.show();
+    }
+
 
     /**
      * 指令输入监听器
