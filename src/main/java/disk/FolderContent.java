@@ -5,7 +5,7 @@ import java.util.List;
 
 public class FolderContent {
 
-    List<FileHeader> fileHeaderList = new ArrayList<>();
+    List<FileHeader> fileHeaderList = new ArrayList<>();//当前目录与父目录不会记录在fileHeaderList集合中
 
     public FolderContent() {
 
@@ -42,23 +42,25 @@ public class FolderContent {
         return b;
     }
 
-//    public List<Integer> getAllCluster() {
-//        return null;
-//    }
-//
-//    public List<Integer> getAllFolderCluster() {
-//        return null;
-//    }
-//
-//    public List<Integer> getAllFileCluster() {
-//        return null;
-//    }
-//
-//    public int getCurrentCluster() {
-//        return 0;
-//    }
-//
-//    public int getParentCluster() {
-//        return 0;
-//    }
+    public List<FileHeader> getAllFolderFileHeader() {
+        List<FileHeader> folderFileHeaderList = new ArrayList<>();
+        if (fileHeaderList.size() == 0)
+            return folderFileHeaderList;
+        for (int i = 0; i < fileHeaderList.size(); i++) {
+            if (fileHeaderList.get(i).ifFolder())
+                folderFileHeaderList.add(fileHeaderList.get(i));
+        }
+        return folderFileHeaderList;
+    }
+
+    public List<FileHeader> getAllFileFileHeader() {
+        List<FileHeader> fileFileHeaderList = new ArrayList<>();
+        if (fileHeaderList.size() == 0)
+            return fileFileHeaderList;
+        for (int i = 0; i < fileHeaderList.size(); i++) {
+            if (fileHeaderList.get(i).ifFolder() == false)
+                fileFileHeaderList.add(fileHeaderList.get(i));
+        }
+        return fileFileHeaderList;
+    }
 }

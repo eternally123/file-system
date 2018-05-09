@@ -27,4 +27,12 @@ public class ConstVar {
     public static final int endCluster = 0xffff;    //表项 结束值
     public static final int emptyCluster = 0x0000;  //表项 空值
 
+
+
+    
+    /*
+    service 层用到的常量
+     */
+    public static final int rootItemNumber=0;//根目录的起始簇号，系统启动时用rootItemNumber读取根目录
+
 }
