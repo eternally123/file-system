@@ -88,8 +88,10 @@ public class FileHeader {
     }
 
     //获取是否是文件夹
-    public int ifFolder() {
-        return attributes[0] & 0x01;
+    public boolean ifFolder() {
+        if ((attributes[0] & 0x01) == 1)
+            return true;
+        return false;
     }
 
     //获取起始簇号
@@ -98,9 +100,11 @@ public class FileHeader {
     }
 
     //设置起始簇号
-    public void setStartCluster(int number) {
-        startCluster[0] = (byte) ((number >> 8) & 0xff);
-        startCluster[1] = (byte) (number & 0xff);
+    public void setStartCluster() {
+        FAT fat = new FAT();
+        int[] number = fat.getEmptyItem(1);
+        startCluster[0] = (byte) ((number[0] >> 8) & 0xff);
+        startCluster[1] = (byte) (number[0] & 0xff);
     }
 
     public int getFileLength() {
