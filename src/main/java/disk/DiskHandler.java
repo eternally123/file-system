@@ -15,4 +15,7 @@ public interface DiskHandler {
     //给出起始簇号，返回以此簇开始的文件内容(返回值是一个ArrayList<byte[]>，有两个byte[]元素，第一个是fileHeader的byte表示，第二个是文件内容的byte表示)
     public List<byte[]> readFile(int startCluster);
 
+    //给出文件起始簇号，删除文件(主义是文件，不能删除文件夹)
+    public boolean deleteFile(int startCluster);
+
 }

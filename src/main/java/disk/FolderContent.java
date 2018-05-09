@@ -42,24 +42,23 @@ public class FolderContent {
         return b;
     }
 
-    public List<Integer> getAllCluster() {
-        return null;
-    }
-
-    public List<Integer> getAllFolderCluster() {
-        return null;
-    }
-
-    public List<Integer> getAllFileCluster() {
-        return null;
-
-    }
-
-    public int getCurrentCluster() {
-        return 0;
-    }
-
-    public int getParentCluster() {
-        return 0;
-    }
+//    public List<Integer> getAllCluster() {
+//        return null;
+//    }
+//
+//    public List<Integer> getAllFolderCluster() {
+//        return null;
+//    }
+//
+//    public List<Integer> getAllFileCluster() {
+//        return null;
+//    }
+//
+//    public int getCurrentCluster() {
+//        return 0;
+//    }
+//
+//    public int getParentCluster() {
+//        return 0;
+//    }
 }

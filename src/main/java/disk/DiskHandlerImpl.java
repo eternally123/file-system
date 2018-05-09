@@ -24,4 +24,9 @@ public class DiskHandlerImpl implements DiskHandler {
     public List<byte[]> readFile(int startCluster) {
         return null;
     }
+
+    @Override
+    public boolean deleteFile(int startCluster) {
+        return false;
+    }
 }

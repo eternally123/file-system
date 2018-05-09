@@ -24,4 +24,7 @@ public class ConstVar {
      */
     public static final int endFAT = 1024 * 64 - 1;
 
+    public static final int endCluster = 0xffff;    //表项 结束值
+    public static final int emptyCluster = 0x0000;  //表项 空值
+
 }
