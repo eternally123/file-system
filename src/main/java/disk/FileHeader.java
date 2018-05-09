@@ -37,10 +37,30 @@ public class FileHeader {
             fileLength[i] = b[60 + i];
     }
 
-    /**
-     * 把fileHeader转化为byte类型数组
-     * @return
-     */
+//    //从数组的第start元素开始到end-1元素结束，利用这些byte构建FileHeader对象
+//    public FileHeader(byte[] b, int start, int end) {
+//        if (b.length < end | (end - start) != 64) {
+//            System.out.println("FileHeader constructor error: byte[] b,int start,int end");
+//            return;
+//        }
+//        for (int i = 0; i < 48; i++)
+//            fileName[i] = b[i+start];//文件名
+//        attributes[0] = b[48+start];
+//        seconds[0] = b[49+start];
+//        createTime[0] = b[50+start];
+//        createTime[1] = b[51+start];
+//        createDate[0] = b[52+start];
+//        createDate[1] = b[53+start];
+//        updateTime[0] = b[54+start];
+//        updateTime[1] = b[55+start];
+//        updateDate[0] = b[56+start];
+//        updateDate[1] = b[57+start];
+//        startCluster[0] = b[58+start];
+//        startCluster[1] = b[59+start];
+//        for (int i = 0; i < 4; i++)
+//            fileLength[i] = b[60 + i+start];
+//    }
+
     public byte[] getBytes() {
         byte[] b = new byte[64];
         for (int i = 0; i < 48; i++)
@@ -92,8 +112,10 @@ public class FileHeader {
     }
 
     //获取是否是文件夹
-    public int ifFolder() {
-        return attributes[0] & 0x01;
+    public boolean ifFolder() {
+        if ((attributes[0] & 0x01) == 1)
+            return true;
+        return false;
     }
 
     //获取起始簇号
@@ -102,9 +124,11 @@ public class FileHeader {
     }
 
     //设置起始簇号
-    public void setStartCluster(int number) {
-        startCluster[0] = (byte) ((number >> 8) & 0xff);
-        startCluster[1] = (byte) (number & 0xff);
+    public void setStartCluster() {
+        FAT fat = new FAT();
+        int[] number = fat.getEmptyItem(1);
+        startCluster[0] = (byte) ((number[0] >> 8) & 0xff);
+        startCluster[1] = (byte) (number[0] & 0xff);
     }
 
     public int getFileLength() {
