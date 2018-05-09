@@ -37,6 +37,10 @@ public class FileHeader {
             fileLength[i] = b[60 + i];
     }
 
+    /**
+     * 把fileHeader转化为byte类型数组
+     * @return
+     */
     public byte[] getBytes() {
         byte[] b = new byte[64];
         for (int i = 0; i < 48; i++)

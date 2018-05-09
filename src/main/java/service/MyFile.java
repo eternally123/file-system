@@ -10,4 +10,24 @@ import disk.FileHeader;
 public class MyFile {
     private FileHeader fileHeader;
     private byte[] fileContent;
+
+    public MyFile() {
+        this.fileHeader = new FileHeader();
+    }
+
+    public FileHeader getFileHeader() {
+        return fileHeader;
+    }
+
+    public void setFileHeader(FileHeader fileHeader) {
+        this.fileHeader = fileHeader;
+    }
+
+    public byte[] getFileContent() {
+        return fileContent;
+    }
+
+    public void setFileContent(byte[] fileContent) {
+        this.fileContent = fileContent;
+    }
 }

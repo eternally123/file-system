@@ -6,7 +6,7 @@ public interface DiskHandler {
     //格式化磁盘，需要格式化FAT表并对数据区和fat表写入初始值
     public void formate();
 
-    //给出文件头和文件内容的byte表示，将文件内容写入磁盘，并返回文件起始簇号
+    //给出文件头和文件内容的byte表示，将文件内容写入磁盘
     public int writeFile(byte[] fileHeader, byte[] contents, int ParentCluster);
 
     //给出文件起始簇号文件头和文件内容的byte表示，将文件内容写入磁盘，并返回文件起始簇号
