@@ -7,6 +7,7 @@ public class FolderContent {
 
     List<FileHeader> fileHeaderList = new ArrayList<>();
 
+
     public FolderContent() {
 
     }
@@ -46,7 +47,15 @@ public class FolderContent {
 //        return null;
 //    }
 //
-//    public List<Integer> getAllFolderCluster() {
+//    public List<Integer> getAll
+//
+//
+//
+//
+//
+//
+//
+// FolderCluster() {
 //        return null;
 //    }
 //

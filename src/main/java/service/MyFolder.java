@@ -9,12 +9,8 @@ import disk.FolderContent;
  * @description:
  */
 public class MyFolder {
-    private FileHeader folderHeader=new FileHeader();
-
-    public MyFolder() {
-        this.folderHeader = new FileHeader();
-        this.folderContent = new FolderContent();
-    }
+    private FileHeader folderHeader;
+    private FolderContent folderContent;
 
     public FileHeader getFolderHeader() {
         return folderHeader;
@@ -31,6 +27,4 @@ public class MyFolder {
     public void setFolderContent(FolderContent folderContent) {
         this.folderContent = folderContent;
     }
-
-    private FolderContent folderContent=new FolderContent();
 }
