@@ -10,8 +10,8 @@ import java.util.List;
 
 //补充函数接口
 public class FAT {
-    char[] fat1 = new char[ConstVar.fatSize];
-    char[] fat2 = new char[ConstVar.fatSize];
+//    char[] fat1 = new char[ConstVar.fatSize];
+//    char[] fat2 = new char[ConstVar.fatSize];
     private int fatStartPoint = ConstVar.fatStart;//fat表起始地址(byte为单位)
     private String fileName = ConstVar.fileName;
     private RandomAccessFile randomAccessFile;
