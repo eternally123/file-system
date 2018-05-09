@@ -37,6 +37,9 @@ public class FileEditor extends JDialog {
         save.addActionListener(listener);//保存按钮设置监听器
         cancel.addActionListener(listener);//取消按钮设置监听器
 
+        //加载文件
+        textArea.setText(fileService.readFile(this.fileName));
+
         //设置滚动面板并添加进容器
         JScrollPane spEdit = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         JPanel btPanel = new JPanel();
