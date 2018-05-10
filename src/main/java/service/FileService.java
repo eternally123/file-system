@@ -6,109 +6,168 @@ import disk.FolderContent;
 
 import java.util.ArrayList;
 
-import static common.ConstVar.fatStart;
+import static common.ConstVar.dataAreaSize;
+import static common.ConstVar.rootItemNumber;
 
 /**
  * @author: Li Xueyang
  * @time: 2018/5/6 20 27
- * @description:向用户视图层提供文件系统的各种服务api
+ * @description: 向用户视图层提供文件系统的各种服务api
  */
 public class FileService {
 
     private DiskHandler diskHandler=new DiskHandlerImpl();
     private MyFile myfile;
     private MyFolder myFolder;
-    private ArrayList<Integer> directoryStack;   //记录当前目录信息的栈
-    private ArrayList<String> path;             //记录当前的路径栈
+    private ArrayList<Integer> currentDirectoryStack;   //记录当前目录信息的栈
+    private ArrayList<String> pathStack;             //记录当前的路径栈
+    public FileService(){
+        currentDirectoryStack=new ArrayList<>(1);
+        currentDirectoryStack.add(0);   //存入根目录
+        pathStack = new ArrayList<>(1);
+        pathStack.add("root/");
+    }
 
     /**
-     * 列出当前目录下的所有文件及其信息（未完成）
+     * 列出当前目录下的所有文件及其信息（未测试）
      * @return
      */
     public StringBuffer listCurrentDirectory(){
         StringBuffer filesAndDirectories=new StringBuffer();
+        byte[] content=diskHandler.readFile(currentDirectoryStack.get(currentDirectoryStack.size()-1)).get(1);
+        FolderContent folderContent=new FolderContent(content);
+        for (FileHeader fileHeader:folderContent.getAllFolderFileHeader()){
+            filesAndDirectories.append(fileHeader.getFileName()).append(" folder ").append(fileHeader.getFileLength()).append(" \n");
+        }
+        for (FileHeader fileHeader:folderContent.getAllFileFileHeader()){
+            filesAndDirectories.append(fileHeader.getFileName()).append(" file   ").append(fileHeader.getFileLength()).append(" \n");
+        }
         return filesAndDirectories;
     }
 
     /**
-     * 改变当前目录（未完成）
+     * 改变当前目录（未测试），只提供cd.或cd..或cd/功能
      * @param directoryName
      * @return
      */
     public String changeDirectory(String directoryName){
-        String currentPath = new String();
-        return currentPath;
+        StringBuilder currentPath = new StringBuilder();
+        if (directoryName.compareTo("/")==0){
+            while(currentDirectoryStack.size()>1){
+                currentDirectoryStack.remove(currentDirectoryStack.size()-1);
+                pathStack.remove(pathStack.size()-1);
+            }
+        }
+        if (directoryName.compareTo("..")==0) {
+            currentDirectoryStack.remove(currentDirectoryStack.size() - 1);   //返回上级目录
+            pathStack.remove(pathStack.size() - 1);
+        }
+        for (String path:pathStack){
+            currentPath.append("/").append(path);
+        }
+        return currentPath.toString();
     }
 
     /**
-     * 列出磁盘所有文件（未完成）
+     * 列出磁盘所有文件（）
      * @return
      */
     public StringBuffer listAllDirectory(){
         StringBuffer tree=new StringBuffer();
+        tree=listDeep("/",rootItemNumber);
         return tree;
     }
 
     /**
-     * 创建文件（未完成,等待FileHeader的修改）
-     * @param fileName
+     * 列出给定指定文件夹下的所有文件，并加上前缀输出
+     * @param before
+     * @param parentCluster
      * @return
      */
-    public boolean creatFile(String fileName){
-        //尚未处理带路径的文件名参数
-        myfile=new MyFile();
-        myfile.getFileHeader().setFileName(fileName);
-        myfile.getFileHeader().setFolder(false);
-        myfile.getFileHeader().setFileLength(0);
-        return true;
+    public StringBuffer listDeep(String before,int parentCluster){
+        StringBuffer result=new StringBuffer();
+        FolderContent folderContent=new FolderContent(diskHandler.readFile(parentCluster).get(1));
+        for (FileHeader fileHeader:folderContent.getAllFileFileHeader()){
+            result.append(before).append(fileHeader.getFileName()).append("\n");
+        }
+        for (FileHeader folderHeader:folderContent.getAllFolderFileHeader()){
+            String newBefore=before+folderHeader.getFileName()+"/";
+            result.append(listDeep(newBefore,folderHeader.getStartCluster()));
+        }
+        return result;
     }
 
-    /**
-     * 删除文件（未完成，待提供接口）
-     * @param fileName
-     * @return
-     */
-    public boolean deleteFile(String fileName){
-        return true;
-    }
 
     /**
-     * 判断文件是否存在（未完成）
+     * 判断文件是否存在（未测试）
      * @param fileName
      * @return
      */
     public boolean fileExist(String fileName){
-        String path=divideIntoParentPathAndName(fileName)[0];//路径
-        String name=divideIntoParentPathAndName(fileName)[1];//文件名
-        if (pathExist(path)<0){     //如果路径不存在
-            return false;
-        }else{
-            if (compareFileOnce(name,pathExist(path))<0){ //路径存在文件不存在
-                return false;
+        if (fileName.indexOf('/')==-1){     //文件名参数仅含文件名时
+            if (compareFileOnce(fileName,currentDirectoryStack.get(currentDirectoryStack.size()-1))<0){
+                return false;       //文件不存在当前文件夹下
+            }else{
+                return true;        //文件存在于当前文件夹下
             }
-            else{       //路径存在文件存在
-                return true;
+        }else {     //文件名参数含有绝对路径时
+            String path = divideIntoParentPathAndName(fileName)[0];//路径
+            String name = divideIntoParentPathAndName(fileName)[1];//文件名
+            if (pathExist(path) < 0) {     //如果路径不存在
+                return false;
+            } else {
+                if (compareFileOnce(name, pathExist(path)) < 0) { //路径存在文件不存在
+                    return false;
+                } else {       //路径存在文件存在
+                    return true;
+                }
             }
         }
     }
 
     /**
-     * 创建目录（未完成）
-     * @param directoryName
+     * 创建文件（未测试）,此前已经判断文件是否存在
+     * @param fileName
      * @return
      */
-    public boolean creatDirectory(String directoryName){
-        return true;
+    public boolean creatFile(String fileName){  //暂且用null代替内容，需要交流
+        int parentCluster;
+        myfile=new MyFile();
+        myfile.getFileHeader().setFolder(false);
+        myfile.getFileHeader().setFileLength(0);
+        myfile.getFileHeader().setStartCluster();
+        if (fileName.indexOf('/')==-1){     //文件名参数不含绝对路径
+            myfile.getFileHeader().setFileName(fileName);
+            parentCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
+        }else{  //文件名参数含绝对路径
+            String path=divideIntoParentPathAndName(fileName)[0];
+            String name=divideIntoParentPathAndName(fileName)[1];
+            myfile.getFileHeader().setFileName(name);
+            parentCluster=pathExist(path);
+        }
+        return diskHandler.writeFile(myfile.getFileHeader().getBytes(),null,parentCluster);
     }
 
     /**
-     * 删除目录（未完成，待提供接口）
-     * @param directoryName
+     * 删除文件（未测试），删除前已判断文件是否存在
+     * @param fileName
      * @return
      */
-    public boolean deleteDirectory(String directoryName){
-        return true;
+    public boolean deleteFile(String fileName){
+        int parentDirectoryCluster;  //父目录的起始簇号
+        int startClusterOfFile;    //文件的起始簇号
+        if (fileName.indexOf('/')==-1){     //文件名参数不含绝对路径
+            parentDirectoryCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
+            startClusterOfFile=compareFileOnce(fileName,parentDirectoryCluster);
+        }else{      //文件名参数不含绝对路径
+            String path=divideIntoParentPathAndName(fileName)[0];
+            String name=divideIntoParentPathAndName(fileName)[1];
+            parentDirectoryCluster=pathExist(path);
+            startClusterOfFile=compareFileOnce(name,parentDirectoryCluster);
+        }
+        return diskHandler.deleteFile(startClusterOfFile);
     }
+
 
     /**
      * 判断目录是否存在（未测试）
@@ -116,19 +175,71 @@ public class FileService {
      * @return
      */
     public boolean directoryExist(String directoryName){
-        String path=divideIntoParentPathAndName(directoryName)[0];//目录的父路径
-        String directory=divideIntoParentPathAndName(directoryName)[1];
-        if (pathExist(path)<0){     //如果路径不存在
-            return false;
-        }else{
-            if (compareDirectoryOnce(directory,pathExist(path))<0){ //路径存在目录不存在
+        if (directoryName.indexOf('/')==-1){    //目录名参数仅含有目录名时
+            if (compareDirectoryOnce(directoryName,currentDirectoryStack.get(currentDirectoryStack.size()-1))<0){
+                //目录不存在当前文件夹下
                 return false;
-            }
-            else{       //路径存在目录存在
+            }else { //目录存在当前文件夹下
                 return true;
+            }
+        }else {     //目录名参数为带绝对路径时
+            String path = divideIntoParentPathAndName(directoryName)[0];//目录的父路径
+            String directory = divideIntoParentPathAndName(directoryName)[1];//目录名
+            if (pathExist(path) < 0) {     //如果路径不存在
+                return false;
+            } else {
+                if (compareDirectoryOnce(directory, pathExist(path)) < 0) { //路径存在目录不存在
+                    return false;
+                } else {       //路径存在目录存在
+                    return true;
+                }
             }
         }
     }
+
+    /**
+     * 创建目录（未测试）
+     * @param directoryName
+     * @return
+     */
+    public boolean creatDirectory(String directoryName){
+        int parentCluster;
+        myFolder = new MyFolder();
+        myFolder.getFolderHeader().setFolder(true);
+        myFolder.getFolderHeader().setFileLength(0);
+        myFolder.getFolderHeader().setStartCluster();
+        if (directoryName.indexOf('/')==-1){    //目录名参数不含绝对路径
+            myFolder.getFolderHeader().setFileName(directoryName);
+            parentCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
+        }else {      //目录名参数不含绝对路径
+            String path=divideIntoParentPathAndName(directoryName)[0];
+            String name=divideIntoParentPathAndName(directoryName)[1];
+            myFolder.getFolderHeader().setFileName(name);
+            parentCluster=pathExist(path);
+        }
+        return (diskHandler.writeFile(myFolder.getFolderHeader().getBytes(),null,parentCluster));
+    }
+
+    /**
+     * 删除目录（未测试）
+     * @param directoryName
+     * @return
+     */
+    public boolean deleteDirectory(String directoryName){
+        int parentCluster;
+        int directoryCluster;
+        if (directoryName.indexOf('/')==-1){    //目录名参数不含绝对路径
+            parentCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
+            directoryCluster=compareDirectoryOnce(directoryName,parentCluster);
+        }else{  //目录名参数含绝对路径
+            String path=divideIntoParentPathAndName(directoryName)[0];
+            String name=divideIntoParentPathAndName(directoryName)[1];
+            parentCluster=pathExist(path);
+            directoryCluster=compareDirectoryOnce(name,parentCluster);
+        }
+        return (diskHandler.deleteFile(directoryCluster));
+    }
+
 
     /**
      * 格式化磁盘（未测试）
@@ -140,13 +251,24 @@ public class FileService {
     }
 
     /**
-     * 读磁盘文件，并加载到缓存区（未完成）
+     * 读磁盘文件，并加载到缓存区（未测试），加载前已判断该文件是否存在
      * @param fileName
-     * @param content
      * @return
      */
-    public boolean readFile(String fileName,StringBuffer content){
-        return true;
+    public String readFile(String fileName){
+        int parentCluster;
+        int fileCluster;
+        if (fileName.indexOf('/')!=-1){ //文件名含绝对路径
+            String path=divideIntoParentPathAndName(fileName)[0];
+            String name=divideIntoParentPathAndName(fileName)[1];
+            parentCluster=pathExist(path);
+            fileCluster=compareFileOnce(name,parentCluster);
+        }
+        else{   //文件名不含绝对路径
+            parentCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
+            fileCluster=compareFileOnce(fileName,parentCluster);
+        }
+        return diskHandler.readFile(fileCluster).get(1).toString();
     }
 
     /**
@@ -160,18 +282,14 @@ public class FileService {
     }
 
     /**
-     * 将文件名参数分离为父路径和文件名或目录名（）
+     * 将文件名参数（绝对路径）分离为父路径和文件名或目录名（完成）
      * @param fileName
      * @return
      */
-    public String[] divideIntoParentPathAndName(String fileName){   //没考虑只有名字而没有路径的情况
+    public String[] divideIntoParentPathAndName(String fileName){
         String[] parentPathAndName= new String[2];
         int pos=fileName.lastIndexOf("/");
-        if (fileName.charAt(0)!='/'){
-            parentPathAndName[0]="/"+fileName.substring(0,pos);//父路径
-        }else{
-            parentPathAndName[0]=fileName.substring(0,pos);//父路径
-        }
+        parentPathAndName[0]=fileName.substring(0,pos);//父路径
         parentPathAndName[1]=fileName.substring(pos+1);//文件名或目录名
         return parentPathAndName;
     }
@@ -182,9 +300,9 @@ public class FileService {
      * @return
      */
     public int pathExist(String path) {
-        int parentCluster=fatStart;
+        int parentCluster=rootItemNumber;
         if (path.compareTo("/") == 0) {
-            return fatStart;//如果路径为根目录，返回根目录的起始簇值
+            return rootItemNumber;//如果路径为根目录，返回根目录的起始簇值
         } else{ //否则进行查找并得出查找结果
             return compareDirectoryMany(path,parentCluster);
         }
@@ -225,24 +343,28 @@ public class FileService {
         int resultCluster=-1;
         myFolder=new MyFolder();
         myFolder.setFolderContent(new FolderContent(diskHandler.readFile(clusterOfParentDirectory).get(1)));//获取父目录的内容
-        for (int cluster :myFolder.getFolderContent().getAllFolderCluster()){       //遍历父目录的所有子目录
-            FileHeader temp= new FileHeader(diskHandler.readFile(cluster).get(0));  //父目录的每个子目录的目录头
-            if (directoryName.compareTo(temp.getFileName())==0){                     //找到目录
-                resultCluster=temp.getStartCluster();
+        for (FileHeader foldHeader :myFolder.getFolderContent().getAllFolderFileHeader()){       //遍历父目录的所有子目录
+            if (directoryName.compareTo(foldHeader.getFileName())==0){                     //找到目录
+                resultCluster=foldHeader.getStartCluster();
                 break;
             }
         }
         return resultCluster;
     }
 
+    /**
+     * 在一个父目录下寻找一个文件，只查询一级，查到返回文件起始簇号，否则返回-1（未测试）
+     * @param fileName
+     * @param clusterOfParentDirectory
+     * @return
+     */
     public int compareFileOnce(String fileName,int clusterOfParentDirectory){
         int resultCluster=-1;
         myFolder=new MyFolder();
         myFolder.setFolderContent(new FolderContent(diskHandler.readFile(clusterOfParentDirectory).get(1)));//获取父目录的内容
-        for (int cluster :myFolder.getFolderContent().getAllFileCluster()){       //遍历父目录的所有文件
-            FileHeader temp= new FileHeader(diskHandler.readFile(cluster).get(0));  //父目录的每个文件的文件头
-            if (fileName.compareTo(temp.getFileName())==0){                     //找到文件
-                resultCluster=temp.getStartCluster();
+        for (FileHeader fileHeader :myFolder.getFolderContent().getAllFileFileHeader()){       //遍历父目录的所有文件
+            if (fileName.compareTo(fileHeader.getFileName())==0){                     //找到文件
+                resultCluster=fileHeader.getStartCluster();
                 break;
             }
         }
@@ -251,6 +373,5 @@ public class FileService {
 
     //测试
     public static void main(String[] args){
-        FileService fileService=new FileService();
     }
 }
