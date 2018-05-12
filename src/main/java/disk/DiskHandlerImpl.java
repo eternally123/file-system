@@ -42,9 +42,9 @@ public class DiskHandlerImpl implements DiskHandler {
     1.将此文件写入磁盘(两部分 fileHeader和contents)   2.通过ParentCluster找到父文件夹，修改父文件夹的contents，然后将父文件夹写回
      */
     @Override
-    public boolean createFile(byte[] fileHeader, byte[] contents, int parentCluster) {
+    public boolean createFile(byte[] fileHeader, int parentCluster) {
         //1.将文件写入磁盘
-        boolean result = createFileWithoutUpdateParentFolder(fileHeader, contents);//将文件写入磁盘
+        boolean result = createFileWithoutUpdateParentFolder(fileHeader);//将文件写入磁盘
         if (result == false) {
             System.out.println("DiskHandlerImpl writeFileWithoutUpdateParentFolder: something wrong...");
             return false;
@@ -69,9 +69,9 @@ public class DiskHandlerImpl implements DiskHandler {
     然后为文件头设置属性：起始簇号，文件长度。
     最后分别在fat表和数据区写入响应内容
      */
-    private boolean createFileWithoutUpdateParentFolder(byte[] fileHeader, byte[] contents) {
+    private boolean createFileWithoutUpdateParentFolder(byte[] fileHeader) {
         FAT fat = new FAT();
-        int clusterNumber = (contents.length + 64) / ConstVar.cluster + 1;
+        int clusterNumber = 1;
         int[] emptyClusterNumber = fat.getEmptyItem(clusterNumber);//获取所需要的簇号存放在emptyClusterNumber数组中
 
         FileHeader newFileHeader = new FileHeader(fileHeader);//创建fileHeader对象方便为fileHeader部分属性赋值
@@ -82,12 +82,9 @@ public class DiskHandlerImpl implements DiskHandler {
         fat.writeMany(emptyClusterNumber);
         //------写dataArea
         DataArea dataArea = new DataArea();
-        byte[] fileHeaderAndContent = new byte[64 + contents.length];//将所有内容封入fileHeaderAndContent
+        byte[] fileHeaderAndContent = new byte[64];//将所有内容封入fileHeaderAndContent
         for (int i = 0; i < 64; i++)
             fileHeaderAndContent[i] = fileHeader[i];
-        for (int i = 64; i < fileHeaderAndContent.length; i++) {
-            fileHeaderAndContent[i] = contents[i - 64];
-        }
         dataArea.writeMany(emptyClusterNumber, fileHeaderAndContent);
         return true;
     }
@@ -227,7 +224,7 @@ public class DiskHandlerImpl implements DiskHandler {
             fat.write(fileNumber[i], ConstVar.fatItemEmptyValue);//1--------------要删除的文件的fat表项置空
 
         //修改父文件夹内容
-        int[] parentFileNumber=fat.readFileNumbers(parentCluster);
+        int[] parentFileNumber = fat.readFileNumbers(parentCluster);
         byte[] fileHeaderAndContent = dataArea.readMany(parentFileNumber);//父文件夹所有内容
 
         byte[] fileHeader = new byte[64];//父文件夹文件头
@@ -236,21 +233,21 @@ public class DiskHandlerImpl implements DiskHandler {
         FileHeader parentFileHeader = new FileHeader(fileHeader);
 
         int fileLength = parentFileHeader.getFileLength();
-        parentFileHeader.setFileLength(fileLength-64);//1--------------修改父文件夹文件头
+        parentFileHeader.setFileLength(fileLength - 64);//1--------------修改父文件夹文件头
 
-        byte[] folderContent=new byte[64];//2-----------------修改父文件夹folderContent
-        FolderContent parentFolderContent=new FolderContent();//父文件夹folderContent
-        for (int i=0;i<(fileLength-64)/64;i++){//每次循环读出一个fileHeader
-            for (int j=0;j<64;j++){
-                folderContent[j]=fileHeaderAndContent[64+i*64+j];
+        byte[] folderContent = new byte[64];//2-----------------修改父文件夹folderContent
+        FolderContent parentFolderContent = new FolderContent();//父文件夹folderContent
+        for (int i = 0; i < (fileLength - 64) / 64; i++) {//每次循环读出一个fileHeader
+            for (int j = 0; j < 64; j++) {
+                folderContent[j] = fileHeaderAndContent[64 + i * 64 + j];
             }
-            FileHeader parentFolderContentItem=new FileHeader(folderContent);
-            if (parentFolderContentItem.getStartCluster()!=startCluster)
+            FileHeader parentFolderContentItem = new FileHeader(folderContent);
+            if (parentFolderContentItem.getStartCluster() != startCluster)
                 parentFolderContent.addFileHeader(parentFolderContentItem);
         }
-        byte[] newFolderContent= parentFolderContent.getByte();
+        byte[] newFolderContent = parentFolderContent.getByte();
 
-        createFileWithoutUpdateParentFolder(fileHeader,newFolderContent);
+        writeFileWithoutUpdateParentFolder(parentCluster, fileHeader, newFolderContent);
         return true;
     }
 }
