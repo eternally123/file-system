@@ -8,24 +8,20 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-//补充函数接口
 public class FAT {
-    //    char[] fat1 = new char[ConstVar.fatSize];
-//    char[] fat2 = new char[ConstVar.fatSize];
-    private int fatStartPoint = ConstVar.fatStart;//fat表起始地址(byte为单位)
-    private String fileName = ConstVar.fileName;
-    private RandomAccessFile randomAccessFile;
+    private int fatStartPoint = ConstVar.fatStartAddress;//fat表起始地址(byte为单位)
+    private String diskName = ConstVar.diskName;//磁盘名称
+    private RandomAccessFile randomAccessFile;//文件指针
 
 
     //初始化randomAccessFile，在执行任何操作之前都会调用次函数
     private void initRandomAccessFile() {
         try {
-            randomAccessFile = new RandomAccessFile("file_system", "rw");
+            randomAccessFile = new RandomAccessFile(diskName, "rw");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
-
 
     /*
     给定某个表项号和值，将值写入表项号
@@ -37,11 +33,11 @@ public class FAT {
             return;
         }
         initRandomAccessFile();
-        byte[] val = new byte[2];//byte存放二进制value值
+        byte[] val = new byte[2];//byte存放二进制value值，byte[0]存放二进制value高8位 byte[1]存放二进制value低8位
         val[1] = (byte) value;
         val[0] = (byte) (value >> 8);
         try {
-            randomAccessFile.seek(number * 2 + ConstVar.fatStart);
+            randomAccessFile.seek(number * ConstVar.fatItemLength + ConstVar.fatStartAddress);
             randomAccessFile.write(val);//写入value
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,10 +62,10 @@ public class FAT {
         }
         initRandomAccessFile();
         try {
-            randomAccessFile.seek(number * 2 + ConstVar.fatStart);
+            randomAccessFile.seek(number * ConstVar.fatItemLength + ConstVar.fatStartAddress);
             byte[] b = new byte[2];
             randomAccessFile.read(b);
-            int value = (int) ((b[0] << 8) & 0xffff) | (b[1] & 0xffff);
+            int value = ((b[0] << 8) & 0xffff) | (b[1] & 0xffff);
             return value;
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,21 +81,23 @@ public class FAT {
 
     /*
     获取number个空的表项号
+    如果磁盘剩余空间不足，返回null
      */
     public int[] getEmptyItem(int number) {
         int[] result = new int[number];//result数组记录获取的空的表项号
-        int find = 0;//find记录找到的第n个值，没找到一个值，find=find+1
+        int foundNumber = 0;//记录当前找到的空簇号的个数，没找到一个foundNumber+1
         int index = 0;//index是表项号的索引，从0开始遍历表项，如果index超出最大表项值，则抛出异常
-        int value;
-        while (find < number) {
+        int value;//记录当前找到的空簇号，每找到一个后加入到result结果集中
+        while (foundNumber < number) {
             value = read(index);
             if (value == 0) {
-                result[find] = index;
-                find = find + 1;
+                result[foundNumber] = index;
+                foundNumber = foundNumber + 1;
             }
             index = index + 1;
-            if (index > ConstVar.endCluster) {//剩余空间不足
+            if (index > ConstVar.fatSize) {//剩余空间不足
                 System.out.println("FAT getEmptyItem: no enough empty item");
+                return null;
             }
         }
         return result;
@@ -108,6 +106,8 @@ public class FAT {
     /*
     对多个表项写入值
     默认多个表项按照int[] 顺序构成一个文件的存储
+    例如：
+        number=[1,5,8,10] 则1,5,8,10表项对应的表项值为5,8,10,结束符号
      */
     public void writeMany(int[] number) {
         for (int i = 0; i < number.length; i++)
@@ -120,9 +120,9 @@ public class FAT {
         for (int i = 0; i < number.length; i++) {
             //if else语句是为了确定写入表项的值
             //如果是最后一个number，那么应该写入结束值，否则写入下一个number的值
-            if (i == number.length - 1) {
-                value = ConstVar.endFAT;
-            } else {
+            if (i == number.length - 1) {//如果写入的是最后一个表项，应该写入终结符
+                value = ConstVar.fatItemEndValue;
+            } else {//如果不是最后一个表项，应该写入下一个表项的表项号
                 value = number[i + 1];
             }
 
@@ -130,7 +130,7 @@ public class FAT {
             val[1] = (byte) value;
             val[0] = (byte) (value >> 8);
             try {
-                randomAccessFile.seek(number[i] * 2 + ConstVar.fatStart);
+                randomAccessFile.seek(number[i] * 2 + ConstVar.fatStartAddress);
                 randomAccessFile.write(val);//写入value
             } catch (IOException e) {
                 e.printStackTrace();
@@ -146,15 +146,16 @@ public class FAT {
 
     /*
     给起始簇号，读取文件所有簇号
+    如果此簇号是0，则返回int[0] result
      */
     public int[] readFileNumbers(int startNumber) {
         if (read(startNumber) == 0)//当前起始簇号没有记录文件
-            return null;
+            return new int[0];
 
         List<Integer> list = new ArrayList();
         list.add(startNumber);
         int number = read(startNumber);
-        while (number != ConstVar.endFAT) {
+        while (number != ConstVar.fatItemEmptyValue) {
             list.add(number);
             number = read(number);
         }
@@ -169,14 +170,14 @@ public class FAT {
 
     /*
     格式化fat表
-    将fat表全部写入0x00  第0号表项写入结束值
+    将fat表全部写入0x0000  第0号表项写入结束值
      */
-    public void formate() {
+    public boolean formate() {
         //格式化磁盘--格式化fat表
         byte[] b = new byte[ConstVar.fatSize];
         initRandomAccessFile();
         try {
-            randomAccessFile.seek(ConstVar.fatStart);
+            randomAccessFile.seek(ConstVar.fatStartAddress);
             randomAccessFile.write(b);
         } catch (IOException e) {
             e.printStackTrace();
@@ -187,6 +188,7 @@ public class FAT {
                 e.printStackTrace();
             }
         }
-        write(0, ConstVar.endCluster);
+        write(0, ConstVar.fatItemEndValue);
+        return true;
     }
 }

@@ -13,9 +13,15 @@ public class FileHeader {
     byte[] startCluster = new byte[2];//起始簇号
     byte[] fileLength = new byte[4];//文件长度---占用簇大小*4
 
+    /*
+    构造函数，创建一个空的fileHeader
+     */
     public FileHeader() {
     }
 
+    /*
+    构造函数，根据符合格式的byte数组创建fileHeader对象，byte数组必须为64byte
+     */
     public FileHeader(byte[] b) {
         if (b.length != 64)
             System.out.println("construct error FileHeader: the length of the parameter isn't 64");
@@ -37,30 +43,9 @@ public class FileHeader {
             fileLength[i] = b[60 + i];
     }
 
-//    //从数组的第start元素开始到end-1元素结束，利用这些byte构建FileHeader对象
-//    public FileHeader(byte[] b, int start, int end) {
-//        if (b.length < end | (end - start) != 64) {
-//            System.out.println("FileHeader constructor error: byte[] b,int start,int end");
-//            return;
-//        }
-//        for (int i = 0; i < 48; i++)
-//            fileName[i] = b[i+start];//文件名
-//        attributes[0] = b[48+start];
-//        seconds[0] = b[49+start];
-//        createTime[0] = b[50+start];
-//        createTime[1] = b[51+start];
-//        createDate[0] = b[52+start];
-//        createDate[1] = b[53+start];
-//        updateTime[0] = b[54+start];
-//        updateTime[1] = b[55+start];
-//        updateDate[0] = b[56+start];
-//        updateDate[1] = b[57+start];
-//        startCluster[0] = b[58+start];
-//        startCluster[1] = b[59+start];
-//        for (int i = 0; i < 4; i++)
-//            fileLength[i] = b[60 + i+start];
-//    }
-
+    /*
+    将对象转化为byte数组存储格式
+     */
     public byte[] getBytes() {
         byte[] b = new byte[64];
         for (int i = 0; i < 48; i++)
@@ -84,7 +69,12 @@ public class FileHeader {
 
     //获取文件名
     public String getFileName() {
-        String fileNameV = new String(fileName);
+        String fileNameV = null;
+        try {
+            fileNameV = new String(fileName,"ascii");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         return fileNameV;
     }
 
@@ -96,7 +86,8 @@ public class FileHeader {
                 System.out.println("FileHeader setFileName:invalid name");
                 return;
             }
-            this.fileName = b;
+            for (int i = 0; i < b.length; i++)
+                fileName[i] = b[i];
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -129,6 +120,11 @@ public class FileHeader {
         int[] number = fat.getEmptyItem(1);
         startCluster[0] = (byte) ((number[0] >> 8) & 0xff);
         startCluster[1] = (byte) (number[0] & 0xff);
+    }
+
+    public void setStartCluster(int number) {;
+        startCluster[0] = (byte) ((number >> 8) & 0xff);
+        startCluster[1] = (byte) (number & 0xff);
     }
 
     public int getFileLength() {

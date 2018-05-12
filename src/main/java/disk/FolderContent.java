@@ -42,6 +42,10 @@ public class FolderContent {
         return b;
     }
 
+    public List<FileHeader> getAllFileHeader(){
+        return fileHeaderList;
+    }
+
     public List<FileHeader> getAllFolderFileHeader() {
         List<FileHeader> folderFileHeaderList = new ArrayList<>();
         if (fileHeaderList.size() == 0)
@@ -62,5 +66,18 @@ public class FolderContent {
                 fileFileHeaderList.add(fileHeaderList.get(i));
         }
         return fileFileHeaderList;
+    }
+
+    public boolean addFileHeader(FileHeader fileHeader){
+        fileHeaderList.add(fileHeader);
+        return true;
+    }
+
+    public boolean removeFileHeader(int startCluster){
+        for (int i=0;i<fileHeaderList.size();i++){
+            if (fileHeaderList.get(i).getStartCluster()==startCluster)
+                fileHeaderList.remove(i);
+        }
+        return true;
     }
 }
