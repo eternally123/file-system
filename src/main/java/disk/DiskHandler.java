@@ -7,7 +7,7 @@ public interface DiskHandler {
     public void formate();
 
     //给出文件头和文件内容的byte表示，将文件内容写入磁盘，返回是否update成功
-    public boolean createFile(byte[] fileHeader, byte[] contents, int parentCluster);
+    public boolean createFile(byte[] fileHeader, int parentCluster);
 
     //给出文件起始簇号文件头和文件内容的byte表示，将文件内容写入磁盘，返回是否update成功
     public boolean writeFile(int startCluster, byte[] fileHeader, byte[] contents, int parentCluster);
