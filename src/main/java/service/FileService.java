@@ -73,8 +73,7 @@ public class FileService {
      * @return
      */
     public StringBuffer listAllDirectory(){
-        StringBuffer tree=new StringBuffer();
-        tree=listDeep("/",rootItemNumber);
+        StringBuffer tree=listDeep("/",rootItemNumber);
         return tree;
     }
 
@@ -145,7 +144,7 @@ public class FileService {
             myfile.getFileHeader().setFileName(name);
             parentCluster=pathExist(path);
         }
-        return diskHandler.writeFile(myfile.getFileHeader().getBytes(),null,parentCluster);
+        return diskHandler.createFile(myfile.getFileHeader().getBytes(),null,parentCluster);
     }
 
     /**
@@ -165,7 +164,7 @@ public class FileService {
             parentDirectoryCluster=pathExist(path);
             startClusterOfFile=compareFileOnce(name,parentDirectoryCluster);
         }
-        return diskHandler.deleteFile(startClusterOfFile);
+        return diskHandler.deleteFile(startClusterOfFile,parentDirectoryCluster);
     }
 
 
@@ -217,7 +216,7 @@ public class FileService {
             myFolder.getFolderHeader().setFileName(name);
             parentCluster=pathExist(path);
         }
-        return (diskHandler.writeFile(myFolder.getFolderHeader().getBytes(),null,parentCluster));
+        return (diskHandler.createFile(myFolder.getFolderHeader().getBytes(),null,parentCluster));
     }
 
     /**
@@ -237,7 +236,7 @@ public class FileService {
             parentCluster=pathExist(path);
             directoryCluster=compareDirectoryOnce(name,parentCluster);
         }
-        return (diskHandler.deleteFile(directoryCluster));
+        return (diskHandler.deleteFile(directoryCluster,parentCluster));
     }
 
 
@@ -268,7 +267,8 @@ public class FileService {
             parentCluster=currentDirectoryStack.get(currentDirectoryStack.size()-1);
             fileCluster=compareFileOnce(fileName,parentCluster);
         }
-        return diskHandler.readFile(fileCluster).get(1).toString();
+        String  content=new String(diskHandler.readFile(fileCluster).get(1));
+        return  content;
     }
 
     /**

@@ -11,13 +11,13 @@ import java.io.*;
 /**
  * @author: Li Xueyang
  * @time: 2018/5/6 20 08
- * @description:用户界面窗体组件
+ * @description: 用户界面窗体组件
  */
 public class FileFrame extends JFrame{
     private FileService fileService;
     FileFrame(){
         this.fileService=new FileService();
-        setSize(600, 400);//设置界面长宽
+        setSize(800, 400);//设置界面长宽
         setTitle("FileSystem");//设置标题
 
         CommandPanel filePanel = new CommandPanel(fileService);

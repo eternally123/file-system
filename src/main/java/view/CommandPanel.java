@@ -11,7 +11,7 @@ import java.awt.event.KeyListener;
 /**
  * @author: Li Xueyang
  * @time: 2018/5/6 20 10
- * @description:用户界面的面板组件
+ * @description: 用户界面的面板组件
  */
 public class CommandPanel extends JPanel {
     private FileEditor fileEditor;
@@ -41,14 +41,14 @@ public class CommandPanel extends JPanel {
          */
         commandInput = new JTextField();//创建单行文本，用于输入命令
         commandInput.setBorder(brd);
-        commandInput.setBackground(Color.YELLOW);
-        //textInput.setForeground(Color.WHITE);
+        commandInput.setBackground(Color.white);
+        commandInput.setForeground(Color.blue);
         KeyHandler KeyListener = new KeyHandler();
         commandInput.addKeyListener(KeyListener);   //为输入命令的单行文本添加监听器
-        commandInput.setFont(new Font("Verdana", Font.BOLD, 18));   //设置当前字体
+        commandInput.setFont(new Font("宋体 ", Font.PLAIN, 18));   //设置当前字体
         commandInput.setFocusable(true);    //获取焦点
         /*设置左侧提示标签*/
-        JLabel label = new JLabel("[INPUT]");
+        JLabel label = new JLabel("INPUT:");
         label.setFont(new Font("Times New Roman", Font.BOLD, 15));
         label.setBorder(brd);
         label.setForeground(Color.black);
@@ -66,9 +66,10 @@ public class CommandPanel extends JPanel {
         commandOutput.setLineWrap(true);
         commandOutput.setWrapStyleWord(true);
         commandOutput.setFocusable(false);
-        commandOutput.setBackground(Color.DARK_GRAY);
-        commandOutput.setForeground(Color.GREEN);
-        commandOutput.setFont(new Font("Verdana", Font.BOLD, 15));
+        commandOutput.setBackground(Color.darkGray);
+        commandOutput.setForeground(Color.white);
+        commandOutput.setFont(new Font("宋体", Font.BOLD, 15));
+        commandOutput.append("Welcome to the file system! You can input help to gain help!\n");
         commandOutput.append(currentPath);
         JScrollPane spOutput = new JScrollPane(commandOutput, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(spOutput);
@@ -79,7 +80,6 @@ public class CommandPanel extends JPanel {
      * @param command
      */
     private void handleInputCommand(String command){
-        System.out.println(command);
         String commandHead,parameter;
         /*取指令*/
         int pos = command.indexOf(" ");

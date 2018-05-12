@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
 /**
  * @author: Li Xueyang
  * @time: 2018/5/6 20 24
- * @description:文件编辑器
+ * @description: 文件编辑器
  */
 public class FileEditor extends JDialog {
     private JTextArea textArea = new JTextArea();
@@ -31,7 +31,8 @@ public class FileEditor extends JDialog {
         Border brd = BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK);
         textArea.setBorder(brd);
         textArea.setBackground(Color.WHITE);
-        textArea.setFont(new Font("Arial", Font.TRUETYPE_FONT, 25));
+        textArea.setForeground(Color.black);
+        textArea.setFont(new Font("宋体", Font.PLAIN, 15));
         textArea.setLineWrap(true);
         ButtonListener listener = new ButtonListener();
         save.addActionListener(listener);//保存按钮设置监听器
