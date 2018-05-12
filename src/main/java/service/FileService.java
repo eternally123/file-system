@@ -6,7 +6,6 @@ import disk.FolderContent;
 
 import java.util.ArrayList;
 
-import static common.ConstVar.dataAreaSize;
 import static common.ConstVar.rootItemNumber;
 
 /**
@@ -25,7 +24,15 @@ public class FileService {
         currentDirectoryStack=new ArrayList<>(1);
         currentDirectoryStack.add(0);   //存入根目录
         pathStack = new ArrayList<>(1);
-        pathStack.add("root/");
+        pathStack.add("root");
+    }
+    public String getCurrentPath(){
+        StringBuilder currentPath=new StringBuilder();
+        for (String path:pathStack){
+            currentPath.append("/").append(path);
+        }
+        currentPath.deleteCharAt(0);
+        return currentPath.toString();
     }
 
     /**
@@ -51,7 +58,6 @@ public class FileService {
      * @return
      */
     public String changeDirectory(String directoryName){
-        StringBuilder currentPath = new StringBuilder();
         if (directoryName.compareTo("/")==0){
             while(currentDirectoryStack.size()>1){
                 currentDirectoryStack.remove(currentDirectoryStack.size()-1);
@@ -62,10 +68,7 @@ public class FileService {
             currentDirectoryStack.remove(currentDirectoryStack.size() - 1);   //返回上级目录
             pathStack.remove(pathStack.size() - 1);
         }
-        for (String path:pathStack){
-            currentPath.append("/").append(path);
-        }
-        return currentPath.toString();
+        return getCurrentPath();
     }
 
     /**
@@ -73,7 +76,7 @@ public class FileService {
      * @return
      */
     public StringBuffer listAllDirectory(){
-        StringBuffer tree=listDeep("/",rootItemNumber);
+        StringBuffer tree=listDeep("",rootItemNumber);
         return tree;
     }
 
@@ -144,7 +147,7 @@ public class FileService {
             myfile.getFileHeader().setFileName(name);
             parentCluster=pathExist(path);
         }
-        return diskHandler.createFile(myfile.getFileHeader().getBytes(),null,parentCluster);
+        return diskHandler.createFile(myfile.getFileHeader().getBytes(),parentCluster);
     }
 
     /**
@@ -216,7 +219,7 @@ public class FileService {
             myFolder.getFolderHeader().setFileName(name);
             parentCluster=pathExist(path);
         }
-        return (diskHandler.createFile(myFolder.getFolderHeader().getBytes(),null,parentCluster));
+        return (diskHandler.createFile(myFolder.getFolderHeader().getBytes(),parentCluster));
     }
 
     /**
@@ -278,7 +281,21 @@ public class FileService {
      * @return
      */
     public boolean writeFile(String fileName, String content) {
-        return true;
+        int clusterOfParent=0;
+        int clusterOfFile=0;
+        byte[] fileHeader;
+        if (fileName.indexOf('/')==-1) { //文件名参数不含绝对路径
+            clusterOfParent = currentDirectoryStack.get(currentDirectoryStack.size() - 1);
+            clusterOfFile = compareFileOnce(fileName, clusterOfParent);
+        }
+        if (fileName.indexOf('/')!=-1){  //文件名参数含有绝对路径
+            String parentPath =divideIntoParentPathAndName(fileName)[0];
+            String name=divideIntoParentPathAndName(fileName)[1];
+            clusterOfParent=pathExist(parentPath);
+            clusterOfFile=compareFileOnce(name,clusterOfParent);
+        }
+        fileHeader=diskHandler.readFile(clusterOfFile).get(0);
+        return diskHandler.writeFile(clusterOfFile,fileHeader,content.getBytes(),clusterOfParent);
     }
 
     /**
@@ -286,6 +303,7 @@ public class FileService {
      * @param fileName
      * @return
      */
+
     public String[] divideIntoParentPathAndName(String fileName){
         String[] parentPathAndName= new String[2];
         int pos=fileName.lastIndexOf("/");
@@ -293,7 +311,6 @@ public class FileService {
         parentPathAndName[1]=fileName.substring(pos+1);//文件名或目录名
         return parentPathAndName;
     }
-
     /**
      * 判断路径是否存在,若存在，返回起始簇值，若不存在，返回-1（未测试）
      * @param path
@@ -373,5 +390,6 @@ public class FileService {
 
     //测试
     public static void main(String[] args){
+
     }
 }

@@ -18,10 +18,11 @@ public class CommandPanel extends JPanel {
     private JTextField commandInput;
     private JTextArea commandOutput;
     private FileService fileService;
-    private String currentPath = "root:\\>";
+    private String currentPath;
 
     public CommandPanel(FileService fileService) {
         this.fileService = fileService;
+    this.currentPath=fileService.getCurrentPath()+">";
         init();
     }
 
