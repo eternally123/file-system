@@ -58,6 +58,7 @@ public class FileService {
      * @return
      */
     public String changeDirectory(String directoryName){
+
         if (directoryName.compareTo("/")==0){
             while(currentDirectoryStack.size()>1){
                 currentDirectoryStack.remove(currentDirectoryStack.size()-1);
