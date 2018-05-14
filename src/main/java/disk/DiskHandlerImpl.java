@@ -56,7 +56,16 @@ public class DiskHandlerImpl implements DiskHandler {
         parentFolderContent.addFileHeader(newFileHeader);
         byte[] updatedFolderContent = parentFolderContent.getByte();//将父目录的folderContent修改
 
-        result = writeFileWithoutUpdateParentFolder(parentCluster, parentFolder.get(0), updatedFolderContent);//将父文件夹修改后的内容写回
+
+        //----5.14添加修改length
+        FileHeader fileHeader1=new FileHeader(parentFolder.get(0));
+        fileHeader1.setFileLength(fileHeader1.getFileLength()+64);
+
+        //=-----------
+
+        result = writeFileWithoutUpdateParentFolder(parentCluster, fileHeader1.getBytes(), updatedFolderContent);//将父文件夹修改后的内容写回
+
+
         if (result == false) {
             System.out.println("DiskHandlerImpl writeFileWithoutUpdateParentFolder: something wrong...");
             return false;
@@ -194,6 +203,7 @@ public class DiskHandlerImpl implements DiskHandler {
         FAT fat = new FAT();
         DataArea dataArea = new DataArea();
         int[] number = fat.readFileNumbers(startCluster);//number存储要进行读取的簇号
+
         byte[] fileAndContent = dataArea.readMany(number);//content存储读出的内容(是簇长度的整数倍，需要根据文件长度取舍)
         byte[] fileHeader = new byte[64];//1--------------读出fileHeader
         for (int i = 0; i < 64; i++)
@@ -201,6 +211,7 @@ public class DiskHandlerImpl implements DiskHandler {
         FileHeader fileHeader1 = new FileHeader(fileHeader);
 
         int fileLength = fileHeader1.getFileLength();//得到文件长度
+
         byte[] content = new byte[fileLength - 64];//2---------------读出content
         for (int i = 64; i < fileLength; i++)
             content[i - 64] = fileAndContent[i];
