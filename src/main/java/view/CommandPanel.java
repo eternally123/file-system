@@ -95,11 +95,16 @@ public class CommandPanel extends JPanel {
         parameter = parameter.toLowerCase();
         //System.out.println("head: "+commandHead+" parameter: "+parameter);
         /*处理指令*/
-        if (commandHead.compareTo("cd") == 0 && (parameter.compareTo("/") == 0 || parameter.compareTo("..") == 0 || parameter.compareTo(".") == 0)) {
-            commandOutput.append(commandHead+" "+parameter+"\n");
-            fileService.changeDirectory(parameter);
+        if (commandHead.compareTo("cd") == 0 && !parameter.isEmpty()){
+            System.out.println("flag");
+            if(parameter.compareTo("/") == 0 || parameter.compareTo("..") == 0 || fileService.directoryExist(parameter)) {
+                commandOutput.append(commandHead + " " + parameter + "\n");
+                fileService.changeDirectory(parameter);
+            }else{
+                commandOutput.append("The directory dosen't exist!\n");
+            }
         }
-        if (commandHead.compareTo("tree")==0){
+        else if (commandHead.compareTo("tree")==0){
             commandOutput.append(commandHead+" "+parameter+"\n");
             commandOutput.append((fileService.listAllDirectory()).toString());
         }
@@ -157,6 +162,8 @@ public class CommandPanel extends JPanel {
         commandOutput.append("rf       fileName        -->to remove a file.\n");
         commandOutput.append("edit     fileName        -->to edit a file.\n");
         commandOutput.append("format                   -->to format the disk.\n");
+    }
+    public void handleCdCommand(String parameter){
     }
     public void handleMdCommand(String parameter){
         if (fileService.directoryExist(parameter)){
@@ -228,7 +235,7 @@ public class CommandPanel extends JPanel {
                     && commandInput.getText().compareTo("") != 0) {
                 handleInputCommand(commandInput.getText());
                 commandInput.setText("");
-                commandOutput.append(currentPath);
+                commandOutput.append(fileService.getCurrentPath()+">");
             }
         }
 

@@ -36,7 +36,7 @@ public class FileService {
     }
 
     /**
-     * 列出当前目录下的所有文件及其信息（未测试）
+     * 列出当前目录下的所有文件及其信息
      * @return
      */
     public StringBuffer listCurrentDirectory(){
@@ -53,26 +53,42 @@ public class FileService {
     }
 
     /**
-     * 改变当前目录（未测试），只提供cd.或cd..或cd/功能
+     * 改变当前目录，提供cd或cd..或cd/或cd path功能
      * @param directoryName
      * @return
      */
     public String changeDirectory(String directoryName){
+
         if (directoryName.compareTo("/")==0){
             while(currentDirectoryStack.size()>1){
                 currentDirectoryStack.remove(currentDirectoryStack.size()-1);
                 pathStack.remove(pathStack.size()-1);
             }
         }
-        if (directoryName.compareTo("..")==0) {
+        else if(directoryName.compareTo("..")==0) {
             currentDirectoryStack.remove(currentDirectoryStack.size() - 1);   //返回上级目录
             pathStack.remove(pathStack.size() - 1);
+        }
+        else{
+            if (directoryName.indexOf('/')==-1){
+                int newCluster=compareDirectoryOnce(directoryName,currentDirectoryStack.get(currentDirectoryStack.size()-1));
+                currentDirectoryStack.add(newCluster);
+                pathStack.add(directoryName);
+            }else{
+                String[] pathAndName=divideIntoParentPathAndName(directoryName);
+                String path=pathAndName[0];
+                String name=pathAndName[1];
+                int pathCluster=pathExist(path);
+                int newCluster=compareDirectoryOnce(name,pathCluster);
+                currentDirectoryStack.add(newCluster);
+                pathStack.add(name);
+            }
         }
         return getCurrentPath();
     }
 
     /**
-     * 列出磁盘所有文件（）
+     * 列出磁盘所有文件
      * @return
      */
     public StringBuffer listAllDirectory(){
@@ -94,7 +110,7 @@ public class FileService {
         }
         for (FileHeader folderHeader:folderContent.getAllFolderFileHeader()){
             String newBefore=before+folderHeader.getFileName()+"/";
-            result.append(newBefore);
+            result.append(newBefore).append("\n");
             result.append(listDeep(newBefore,folderHeader.getStartCluster()));
         }
         return result;
@@ -102,7 +118,7 @@ public class FileService {
 
 
     /**
-     * 判断文件是否存在（未测试）
+     * 判断文件是否存在
      * @param fileName
      * @return
      */
@@ -129,7 +145,7 @@ public class FileService {
     }
 
     /**
-     * 创建文件（未测试）,此前已经判断文件是否存在
+     * 创建文件,此前已经判断文件是否存在
      * @param fileName
      * @return
      */
@@ -152,7 +168,7 @@ public class FileService {
     }
 
     /**
-     * 删除文件（未测试），删除前已判断文件是否存在
+     * 删除文件，删除前已判断文件是否存在
      * @param fileName
      * @return
      */
@@ -173,7 +189,7 @@ public class FileService {
 
 
     /**
-     * 判断目录是否存在（未测试）
+     * 判断目录是否存在
      * @param directoryName
      * @return
      */
@@ -201,7 +217,7 @@ public class FileService {
     }
 
     /**
-     * 创建目录（未测试）
+     * 创建目录
      * @param directoryName
      * @return
      */
@@ -224,7 +240,7 @@ public class FileService {
     }
 
     /**
-     * 删除目录（未测试）
+     * 删除目录
      * @param directoryName
      * @return
      */
@@ -245,7 +261,7 @@ public class FileService {
 
 
     /**
-     * 格式化磁盘（未测试）
+     * 格式化磁盘
      * @return
      */
     public boolean format(){
@@ -276,7 +292,7 @@ public class FileService {
     }
 
     /**
-     * 写缓存区文件，写到磁盘（未完成）
+     * 写缓存区文件，写到磁盘
      * @param fileName
      * @param content
      * @return
@@ -300,7 +316,7 @@ public class FileService {
     }
 
     /**
-     * 将文件名参数（绝对路径）分离为父路径和文件名或目录名（完成）
+     * 将文件名参数（绝对路径）分离为父路径和文件名或目录名
      * @param fileName
      * @return
      */
@@ -313,7 +329,7 @@ public class FileService {
         return parentPathAndName;
     }
     /**
-     * 判断路径是否存在,若存在，返回起始簇值，若不存在，返回-1（未测试）
+     * 判断路径是否存在,若存在，返回起始簇值，若不存在，返回-1
      * @param path
      * @return
      */
@@ -327,7 +343,7 @@ public class FileService {
     }
 
     /**
-     * 在一个父目录下寻找一个目录，查询多级，查到返回目录起始簇号，否则返回-1（未测试）
+     * 在一个父目录下寻找一个目录，查询多级，查到返回目录起始簇号，否则返回-1
      * @param directoryPath
      * @param clusterOfParentDirectory
      * @return
@@ -352,7 +368,7 @@ public class FileService {
         }
     }
     /**
-     * 在一个父目录下寻找一个目录，只查询一级，查到返回目录起始簇号，否则返回-1（未测试）
+     * 在一个父目录下寻找一个目录，只查询一级，查到返回目录起始簇号，否则返回-1
      * @param directoryName
      * @param clusterOfParentDirectory
      * @return
@@ -371,7 +387,7 @@ public class FileService {
     }
 
     /**
-     * 在一个父目录下寻找一个文件，只查询一级，查到返回文件起始簇号，否则返回-1（未测试）
+     * 在一个父目录下寻找一个文件，只查询一级，查到返回文件起始簇号，否则返回-1
      * @param fileName
      * @param clusterOfParentDirectory
      * @return
@@ -391,10 +407,5 @@ public class FileService {
             }
         }
         return resultCluster;
-    }
-
-    //测试
-    public static void main(String[] args){
-
     }
 }
