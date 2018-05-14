@@ -70,12 +70,18 @@ public class FileHeader {
     //获取文件名
     public String getFileName() {
         String fileNameV = null;
+        int pos=0;
         try {
             fileNameV = new String(fileName, "ascii");
+            pos=fileNameV.indexOf((char)0);
+            if (pos==-1){
+                pos=0;
+            }
+
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        return fileNameV;
+        return  fileNameV.substring(0,pos);
     }
 
     //设置文件名

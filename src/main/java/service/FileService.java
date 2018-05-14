@@ -44,10 +44,10 @@ public class FileService {
         byte[] content=diskHandler.readFile(currentDirectoryStack.get(currentDirectoryStack.size()-1)).get(1);
         FolderContent folderContent=new FolderContent(content);
         for (FileHeader fileHeader:folderContent.getAllFolderFileHeader()){
-            filesAndDirectories.append(" folder ").append(fileHeader.getFileName()).append(fileHeader.getFileLength()).append("\n");
+            filesAndDirectories.append(" folder ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
         }
         for (FileHeader fileHeader:folderContent.getAllFileFileHeader()){
-            filesAndDirectories.append(" file   ").append(fileHeader.getFileName()).append(fileHeader.getFileLength()).append("\n");
+            filesAndDirectories.append(" file   ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
         }
         return filesAndDirectories;
     }
@@ -76,7 +76,7 @@ public class FileService {
      * @return
      */
     public StringBuffer listAllDirectory(){
-        StringBuffer tree=listDeep("",rootItemNumber);
+        StringBuffer tree=listDeep("/",rootItemNumber);
         return tree;
     }
 
@@ -94,6 +94,7 @@ public class FileService {
         }
         for (FileHeader folderHeader:folderContent.getAllFolderFileHeader()){
             String newBefore=before+folderHeader.getFileName()+"/";
+            result.append(newBefore);
             result.append(listDeep(newBefore,folderHeader.getStartCluster()));
         }
         return result;
