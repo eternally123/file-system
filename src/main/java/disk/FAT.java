@@ -155,7 +155,7 @@ public class FAT {
         List<Integer> list = new ArrayList();
         list.add(startNumber);
         int number = read(startNumber);
-        while (number != ConstVar.fatItemEmptyValue) {
+        while (number != ConstVar.fatItemEndValue) {
             list.add(number);
             number = read(number);
         }

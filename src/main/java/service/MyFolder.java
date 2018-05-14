@@ -12,6 +12,11 @@ public class MyFolder {
     private FileHeader folderHeader;
     private FolderContent folderContent;
 
+    public MyFolder() {
+        this.folderHeader = new FileHeader();
+        this.folderContent = new FolderContent();
+    }
+
     public FileHeader getFolderHeader() {
         return folderHeader;
     }

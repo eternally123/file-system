@@ -44,10 +44,10 @@ public class FileService {
         byte[] content=diskHandler.readFile(currentDirectoryStack.get(currentDirectoryStack.size()-1)).get(1);
         FolderContent folderContent=new FolderContent(content);
         for (FileHeader fileHeader:folderContent.getAllFolderFileHeader()){
-            filesAndDirectories.append(fileHeader.getFileName()).append(" folder ").append(fileHeader.getFileLength()).append(" \n");
+            filesAndDirectories.append(" folder ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
         }
         for (FileHeader fileHeader:folderContent.getAllFileFileHeader()){
-            filesAndDirectories.append(fileHeader.getFileName()).append(" file   ").append(fileHeader.getFileLength()).append(" \n");
+            filesAndDirectories.append(" file   ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
         }
         return filesAndDirectories;
     }
@@ -77,7 +77,7 @@ public class FileService {
      * @return
      */
     public StringBuffer listAllDirectory(){
-        StringBuffer tree=listDeep("",rootItemNumber);
+        StringBuffer tree=listDeep("/",rootItemNumber);
         return tree;
     }
 
@@ -95,6 +95,7 @@ public class FileService {
         }
         for (FileHeader folderHeader:folderContent.getAllFolderFileHeader()){
             String newBefore=before+folderHeader.getFileName()+"/";
+            result.append(newBefore);
             result.append(listDeep(newBefore,folderHeader.getStartCluster()));
         }
         return result;
@@ -137,7 +138,7 @@ public class FileService {
         int parentCluster;
         myfile=new MyFile();
         myfile.getFileHeader().setFolder(false);
-        myfile.getFileHeader().setFileLength(0);
+        myfile.getFileHeader().setFileLength(64);
         myfile.getFileHeader().setStartCluster();
         if (fileName.indexOf('/')==-1){     //文件名参数不含绝对路径
             myfile.getFileHeader().setFileName(fileName);
@@ -209,7 +210,7 @@ public class FileService {
         int parentCluster;
         myFolder = new MyFolder();
         myFolder.getFolderHeader().setFolder(true);
-        myFolder.getFolderHeader().setFileLength(0);
+        myFolder.getFolderHeader().setFileLength(64);
         myFolder.getFolderHeader().setStartCluster();
         if (directoryName.indexOf('/')==-1){    //目录名参数不含绝对路径
             myFolder.getFolderHeader().setFileName(directoryName);
@@ -379,6 +380,10 @@ public class FileService {
     public int compareFileOnce(String fileName,int clusterOfParentDirectory){
         int resultCluster=-1;
         myFolder=new MyFolder();
+        System.out.println(clusterOfParentDirectory);
+        String temp=new String(diskHandler.readFile(clusterOfParentDirectory).get(1));
+        System.out.println(temp);
+
         myFolder.setFolderContent(new FolderContent(diskHandler.readFile(clusterOfParentDirectory).get(1)));//获取父目录的内容
         for (FileHeader fileHeader :myFolder.getFolderContent().getAllFileFileHeader()){       //遍历父目录的所有文件
             if (fileName.compareTo(fileHeader.getFileName())==0){                     //找到文件

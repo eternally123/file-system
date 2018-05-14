@@ -139,6 +139,7 @@ public class DataArea {
         byte[] b = fileHeader.getBytes();
 
         initRandomAccessFile();
+
         try {
             randomAccessFile.seek(dataAreaStart);
             randomAccessFile.write(b);

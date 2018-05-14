@@ -180,8 +180,11 @@ public class CommandPanel extends JPanel {
     }
     public void handleMfCommand(String parameter){
         if (fileService.fileExist(parameter)){
+            System.out.println("flag1");
             commandOutput.append("The file already exists!\n");
         }else {
+            System.out.println("flag2");
+
             if (fileService.creatFile(parameter)) {
                 commandOutput.append("The file has been created successfully!\n");
             }else{
