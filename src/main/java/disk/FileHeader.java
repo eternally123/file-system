@@ -1,6 +1,8 @@
 package disk;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+import java.util.Date;
 
 public class FileHeader {
     byte[] fileName = new byte[48];//文件名
@@ -17,6 +19,9 @@ public class FileHeader {
     构造函数，创建一个空的fileHeader
      */
     public FileHeader() {
+        Date date = new Date();
+        setCreateTime(date);
+        setUpdateTime(date);
     }
 
     /*
@@ -70,18 +75,18 @@ public class FileHeader {
     //获取文件名
     public String getFileName() {
         String fileNameV = null;
-        int pos=0;
+        int pos = 0;
         try {
             fileNameV = new String(fileName, "ascii");
-            pos=fileNameV.indexOf((char)0);
-            if (pos==-1){
-                pos=0;
+            pos = fileNameV.indexOf((char) 0);
+            if (pos == -1) {
+                pos = 0;
             }
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        return  fileNameV.substring(0,pos);
+        return fileNameV.substring(0, pos);
     }
 
     //设置文件名
@@ -135,14 +140,11 @@ public class FileHeader {
     }
 
     public int getFileLength() {
-
-        System.out.println("getFileLength:   ");
-
         int a = (fileLength[0] & 0xff) * 256 * 256 * 256;
         int b = (fileLength[1] & 0xff) * 256 * 256;
         int c = (fileLength[2] & 0xff) * 256;
         int d = (fileLength[3] & 0xff);
-        return a+b+c+d;
+        return a + b + c + d;
     }
 
     public void setFileLength(int length) {
@@ -152,7 +154,60 @@ public class FileHeader {
         fileLength[3] = (byte) (length & 0xff);
     }
 
-//待补充
+
+    //5.14----add
+    public boolean setCreateTime(Date timeV) {
+        byte[] time=transTime(timeV);
+        for (int i = 0; i < time.length; i++) {
+            createDate[i] = time[i];
+        }
+        return true;
+    }
+
+    public boolean setUpdateTime(Date timeV) {
+
+        byte[] time=transTime(timeV);
+        for (int i = 0; i < time.length; i++) {
+            updateDate[i] = time[i];
+        }
+        return true;
+    }
+
+    public String getUpdateTime() {
+        return transTimeToString(updateDate);
+    }
+
+    public String getCreateTime() {
+        return transTimeToString(createDate);
+    }
+
+    private byte[] transTime(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1;
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+
+        byte bYear = (byte) ((year - 1980) & 0b1111111);//7bit
+        byte bMonth = (byte) (month & 0b1111);//4bit
+        byte bDay = (byte) (day & 0b11111);//5bit
+
+        byte[] btime = new byte[2];
+        btime[0] = (byte) ((bYear << 1) | (bMonth >> 3));
+        btime[1] = (byte) ((bMonth << 5) | (bDay));
+        return btime;
+    }
+
+    private String transTimeToString(byte[] b) {
+        int year = ((b[0] >> 1) & 0b1111111) + 1980;
+        int month = ((((b[0] << 7) >> 3) & 0b00001000) | ((b[1] >> 5) & 0b00000111)) & 0b1111;
+        int day = ((b[1] << 3) >> 3) & 0b11111;
+
+        String time = new String();
+        time = time + year + "/" + month + "/" + day;
+        return time;
+    }
+    //待补充
 //    public void setCreateTimeAndDate(Date date) {
 //
 //    }
