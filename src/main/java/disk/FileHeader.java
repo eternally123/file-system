@@ -71,7 +71,7 @@ public class FileHeader {
     public String getFileName() {
         String fileNameV = null;
         try {
-            fileNameV = new String(fileName,"ascii");
+            fileNameV = new String(fileName, "ascii");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -122,13 +122,21 @@ public class FileHeader {
         startCluster[1] = (byte) (number[0] & 0xff);
     }
 
-    public void setStartCluster(int number) {;
+    public void setStartCluster(int number) {
+        ;
         startCluster[0] = (byte) ((number >> 8) & 0xff);
         startCluster[1] = (byte) (number & 0xff);
     }
 
     public int getFileLength() {
-        return (int) (((fileLength[0] >> 24) & 0xff) * 256 * 256 * 256 + ((fileLength[0] >> 16) & 0xff) * 256 * 256 + ((fileLength[0] >> 8) & 0xff) * 2568 + fileLength[0] & 0xff);
+
+        System.out.println("getFileLength:   ");
+
+        int a = (fileLength[0] & 0xff) * 256 * 256 * 256;
+        int b = (fileLength[1] & 0xff) * 256 * 256;
+        int c = (fileLength[2] & 0xff) * 256;
+        int d = (fileLength[3] & 0xff);
+        return a+b+c+d;
     }
 
     public void setFileLength(int length) {
