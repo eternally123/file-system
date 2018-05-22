@@ -140,6 +140,9 @@ public class DiskHandlerImpl implements DiskHandler {
         int[] diskClusterNumber = fat.readFileNumbers(startCluster);
         int[] emptyClusterNumber;
 
+//        System.out.println( diskClusterNumber.length);
+//        System.out.println("clusterNumber:"+clusterNumber);
+
         if (diskClusterNumber.length == clusterNumber) {//1-----------如果所需簇个数相同，不做更改，直接重写
             emptyClusterNumber = diskClusterNumber;
             FileHeader newFileHeader = new FileHeader(fileHeader);//创建fileHeader对象方便为fileHeader部分属性赋值
@@ -147,6 +150,7 @@ public class DiskHandlerImpl implements DiskHandler {
             newFileHeader.setFileLength(contents.length + 64);
             fileHeader = newFileHeader.getBytes();//设置好文件头信息的fileHeader
 
+//            System.out.println(emptyClusterNumber);
             fat.writeMany(emptyClusterNumber);//1------------写fat表
             DataArea dataArea = new DataArea();
             byte[] fileHeaderAndContent = new byte[64 + contents.length];//将所有内容封入fileHeaderAndContent
@@ -200,6 +204,7 @@ public class DiskHandlerImpl implements DiskHandler {
 
     @Override
     public List<byte[]> readFile(int startCluster) {
+        System.out.println("\nstart:  "+startCluster+"\n");
         FAT fat = new FAT();
         DataArea dataArea = new DataArea();
         int[] number = fat.readFileNumbers(startCluster);//number存储要进行读取的簇号

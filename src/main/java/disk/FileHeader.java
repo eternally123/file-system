@@ -77,7 +77,7 @@ public class FileHeader {
         String fileNameV = null;
         int pos = 0;
         try {
-            fileNameV = new String(fileName, "ascii");
+            fileNameV = new String(fileName, "utf-8");
             pos = fileNameV.indexOf((char) 0);
             if (pos == -1) {
                 pos = 0;
@@ -92,7 +92,7 @@ public class FileHeader {
     //设置文件名
     public void setFileName(String fileNameV) {
         try {
-            byte[] b = fileNameV.getBytes("ascii");
+            byte[] b = fileNameV.getBytes("utf-8");
             if (b.length > 48) {
                 System.out.println("FileHeader setFileName:invalid name");
                 return;
