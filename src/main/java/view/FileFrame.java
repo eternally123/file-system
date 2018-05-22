@@ -18,6 +18,8 @@ public class FileFrame extends JFrame{
     FileFrame(){
         this.fileService=new FileService();
         setSize(800, 400);//设置界面长宽
+        Dimension d=Toolkit.getDefaultToolkit().getScreenSize();
+        setLocation((int)d.getWidth()/4, (int)d.getHeight()/10);
         setTitle("FileSystem");//设置标题
 
         CommandPanel filePanel = new CommandPanel(fileService);
@@ -28,53 +30,10 @@ public class FileFrame extends JFrame{
         addWindowListener(new WindowAdapter() {
             //关闭窗口
             public void windowClosing(WindowEvent arg0) {
-                /*try {
-                    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("deploy.ini")));
-                    for (int i = 0; i < Utility.NUM_OF_ROOTFILE; i++) {
-                        for (int j = 0; j < Utility.SIZE_OF_FILEINFO; j++) {
-                            out.writeChar(fileManager.rootTable[i][j]);
-                        }
-
-                    }
-                    for (int i = 0; i < Utility.NUM_OF_DATASECTOR; i++) {
-                        out.writeChar(fileManager.fatTable[i]);
-                    }
-
-                    for (int i = 0; i < Utility.NUM_OF_DATASECTOR; i++) {
-                        for (int j = 0; j < Utility.SIZE_OF_SECTOR; j++) {
-                            out.writeChar(fileManager.dataArea[i][j]);
-                        }
-                    }
-                    out.close();
-
-                } catch (Exception e) {
-                    System.out.println(e);
-                }*/
                 System.out.println("windowClosing");
             }
             //打开窗口
             public void windowOpened(WindowEvent arg0) {
-                /*try {
-                    DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream("deploy.ini")));
-                    for (int i = 0; i < Utility.NUM_OF_ROOTFILE; i++) {
-                        for (int j = 0; j < Utility.SIZE_OF_FILEINFO; j++) {
-                            fileManager.rootTable[i][j] = in.readChar();
-                        }
-                    }
-                    for (int i = 0; i < Utility.NUM_OF_DATASECTOR; i++) {
-                        fileManager.fatTable[i] = in.readChar();
-                    }
-
-                    for (int j = 0; j < Utility.NUM_OF_DATASECTOR; j++) {
-                        for (int i = 0; i < Utility.SIZE_OF_SECTOR; i++) {
-                            fileManager.dataArea[j][i] = in.readChar();
-                        }
-                    }
-                    in.close();
-
-                } catch (Exception e) {
-                    System.out.println(e);
-                }*/
             }
         });
 
