@@ -314,7 +314,6 @@ public class FileService {
     public boolean writeFile(String fileName, String content) {
         int clusterOfParent=0;
         int clusterOfFile=0;
-        byte[] fileHeader;
         if (fileName.indexOf('/')==-1) { //文件名参数不含绝对路径
             clusterOfParent = currentDirectoryStack.get(currentDirectoryStack.size() - 1);
             clusterOfFile = compareFileOnce(fileName, clusterOfParent);
@@ -325,8 +324,11 @@ public class FileService {
             clusterOfParent=pathExist(parentPath);
             clusterOfFile=compareFileOnce(name,clusterOfParent);
         }
-        fileHeader=diskHandler.readFile(clusterOfFile).get(0);
-        return diskHandler.writeFile(clusterOfFile,fileHeader,content.getBytes(),clusterOfParent);
+        FileHeader fileHeader=new FileHeader(diskHandler.readFile(clusterOfFile).get(0));
+
+        fileHeader.setFileLength(content.getBytes().length+64);
+
+        return diskHandler.writeFile(clusterOfFile,fileHeader.getBytes(),content.getBytes(),clusterOfParent);
     }
 
     /**
