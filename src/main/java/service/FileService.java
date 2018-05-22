@@ -39,15 +39,29 @@ public class FileService {
      * 列出当前目录下的所有文件及其信息
      * @return
      */
-    public StringBuffer listCurrentDirectory(){
+    public StringBuffer listCurrentDirectory(boolean hasParameter){
         StringBuffer filesAndDirectories=new StringBuffer();
         byte[] content=diskHandler.readFile(currentDirectoryStack.get(currentDirectoryStack.size()-1)).get(1);
         FolderContent folderContent=new FolderContent(content);
-        for (FileHeader fileHeader:folderContent.getAllFolderFileHeader()){
-            filesAndDirectories.append(" folder ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
-        }
-        for (FileHeader fileHeader:folderContent.getAllFileFileHeader()){
-            filesAndDirectories.append(" file   ").append(" ").append(fileHeader.getFileName()).append("\t").append(fileHeader.getFileLength()).append("\n");
+        String result=new String();
+        if (hasParameter) { //如果含有-l参数
+            for (FileHeader fileHeader : folderContent.getAllFolderFileHeader()) {
+                result = String.format("%10s %10s %4d %16s %16s\n", fileHeader.getFileName(), "folder", fileHeader.getFileLength(), fileHeader.getCreateTime(), fileHeader.getUpdateTime());
+                filesAndDirectories.append(result);
+            }
+            for (FileHeader fileHeader : folderContent.getAllFileFileHeader()) {
+                result = String.format("%10s %10s %4d %16s %16s\n", fileHeader.getFileName(), "file", fileHeader.getFileLength(), fileHeader.getCreateTime(), fileHeader.getUpdateTime());
+                filesAndDirectories.append(result);
+            }
+        }else { //如果不含有-l参数
+            for (FileHeader fileHeader : folderContent.getAllFolderFileHeader()) {
+                result = String.format("%10s %10s\n", fileHeader.getFileName(), "folder");
+                filesAndDirectories.append(result);
+            }
+            for (FileHeader fileHeader : folderContent.getAllFileFileHeader()) {
+                result = String.format("%10s %10s\n", fileHeader.getFileName(), "file");
+                filesAndDirectories.append(result);
+            }
         }
         return filesAndDirectories;
     }
