@@ -22,8 +22,9 @@ public class FileEditor extends JDialog {
 
     FileEditor(JFrame frame, String fileName,FileService fileService) {
         super(frame, fileName, true);
-        setSize(430, 430);
-        setLocation(400, 150);
+        Dimension d=Toolkit.getDefaultToolkit().getScreenSize();
+        setSize((int)d.getWidth()/2, (int)d.getHeight()/2);
+        setLocation((int)d.getWidth()/4, (int)d.getHeight()/4);
         setResizable(false);
         this.fileName = fileName;
         this.fileService=fileService;

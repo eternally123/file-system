@@ -108,9 +108,13 @@ public class CommandPanel extends JPanel {
             commandOutput.append(commandHead+" "+parameter+"\n");
             commandOutput.append((fileService.listAllDirectory()).toString());
         }
-        else if (commandHead.compareTo("ls") == 0 && parameter.isEmpty()) {
-            commandOutput.append(commandHead+" "+parameter+"\n");
-            commandOutput.append((fileService.listCurrentDirectory()).toString());
+        else if (commandHead.compareTo("ls") == 0 && (parameter.isEmpty() || parameter.compareTo("-l")==0)) {
+            commandOutput.append(commandHead + " " + parameter + "\n");
+            if (parameter.isEmpty()) {
+                commandOutput.append((fileService.listCurrentDirectory(false)).toString());
+            }else{
+                commandOutput.append((fileService.listCurrentDirectory(true)).toString());
+            }
         }
         else if (commandHead.compareTo("help") == 0) {
             commandOutput.append(commandHead+" "+parameter);
@@ -153,7 +157,7 @@ public class CommandPanel extends JPanel {
         commandOutput.append("\nWelcome to help!\n");
         commandOutput.append("command  parameter       -->usage are those:\n");
         commandOutput.append("help                     -->to gain help about the command information.\n");
-        commandOutput.append("ls                       -->to list the files and directories of current directory.\n");
+        commandOutput.append("ls       -l|             -->to list the files and directories of current directory.\n");
         commandOutput.append("cd       .|..|/          -->to change current directory.\n");
         commandOutput.append("tree                     --> to list all files of the file system.\n");
         commandOutput.append("md       directoryName   -->to make a directory.\n");
