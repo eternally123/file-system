@@ -117,6 +117,11 @@ public class FAT {
             }
         initRandomAccessFile();
         int value;
+
+//        System.out.println("----------------------\n\n");
+//        for (int i = 0; i < number.length; i++)
+//            System.out.println(number[i]);
+//        System.out.println("----------------------\n\n");
         for (int i = 0; i < number.length; i++) {
             //if else语句是为了确定写入表项的值
             //如果是最后一个number，那么应该写入结束值，否则写入下一个number的值
@@ -130,17 +135,20 @@ public class FAT {
             val[1] = (byte) value;
             val[0] = (byte) (value >> 8);
             try {
+//                System.out.println("-------------\n" + (number[i] * 2 + ConstVar.fatStartAddress) + "    " + (value) + "\n---------------\n");
                 randomAccessFile.seek(number[i] * 2 + ConstVar.fatStartAddress);
                 randomAccessFile.write(val);//写入value
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                try {
-                    randomAccessFile.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+
             }
+        }
+
+        try {
+            randomAccessFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
